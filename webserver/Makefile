@@ -27,7 +27,7 @@ all: $(PROG)
 # 	gcc -o greetings main.o greeter.o
 
 $(PROG): $(OBJS)
-	$(LD) $^ -o $(PROG)
+	$(LD) $^ -o $(PROG) -lpthread
 
 #main.o: main.c
 #	gcc -g -c main.c
@@ -36,7 +36,7 @@ $(PROG): $(OBJS)
 #	gcc -g -c greeter.c
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ -lpthread
 
 #clean:
 #	rm main.o greeter.o
