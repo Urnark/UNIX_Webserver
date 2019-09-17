@@ -7,13 +7,13 @@
 
 void* printMessage(void* threadid)
 {
-    printf("\n%d: Hello World!\n",(int) threadid);
+    printf("\n%d: Hello World!\n",*(int*) threadid);
 	pthread_exit(NULL);
 }
 
 int main(int argc, char const *argv[])
 {
-	init_threads(5);
+	init_threads(3);
 
 	for (int rc = 0, i = 0; i < NUM_THREADS; i++)
 	{
@@ -26,5 +26,6 @@ int main(int argc, char const *argv[])
 	}
 
 	terminate_threads();
+
     return 0;
 }

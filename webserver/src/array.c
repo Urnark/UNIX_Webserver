@@ -3,58 +3,87 @@
 /**
  * Creates a new array.
  * 
- * arr: Array instance that should be initilized.
+ * array: Array instance that should be initilized.
  * item_size: Each elements size in bytes.
- * capacity: How much items it should allocate space for.
+ * capacity: How many elements it should allocate space for.
  * */
-void create_array(Array* arr, size_t item_size, size_t capacity)
+void create_array(Array* array, size_t item_size, size_t capacity)
 {
-    arr->item_size = item_size;
-    arr->size = 0;
-    arr->capacity = capacity;
-    arr->arr = malloc(sizeof(Element) * arr->capacity);
+    array->item_size = item_size;
+    array->size = 0;
+    array->capacity = capacity;
+    array->arr = malloc(sizeof(Element) * array->capacity);
 }
 
-void delete_array(Array* arr)
+/**
+ * Delete existing array.
+ * 
+ * array: Array instance that should be deleted.
+ * */
+void delete_array(Array* array)
 {
-    for (int i = 0; i < arr->size; i++)
+    for (int i = 0; i < array->size; i++)
     {
-        free(arr->arr[i].element);
+        free(array->arr[i].element);
     }
-    free(arr->arr);
+    free(array->arr);
 }
 
-
-// Error when expanding the array
-void _check_expand(Array* arr)
+/**
+ * Internal function! Check if an array's capacity should be expanded. If it is double the capacity of the array.
+ * 
+ * array: Array instance that should be initilized.
+ * */
+void _check_expand(Array* array)
 {
-    if (arr->size > arr->capacity)
+    if (array->size == array->capacity)
     {
-        printf("Expand Array\n");
-        const int totalSize = arr->capacity + 2;
-        arr->arr = (Element*)realloc(arr->arr, (totalSize *sizeof(Element)));
+        array->capacity *= 2;
+        array->arr = (Element*)realloc(array->arr, array->capacity *sizeof(Element));
     }
 }
 
-void array_push_item(Array* arr, void* value)
+/**
+ * Add a new element at the end of the array.
+ * 
+ * array: Array instance that should be deleted.
+ * value: The new element.
+ * */
+void array_push_element(Array* array, void* value)
 {
-    _check_expand(arr);
+    _check_expand(array);
 
-    arr->arr[arr->size].element = malloc(arr->item_size);
-    memcpy(arr->arr[arr->size].element, value, arr->item_size);
-    arr->size++;
+    array->arr[array->size].element = malloc(array->item_size);
+    memcpy(array->arr[array->size].element, value, array->item_size);
+    array->size++;
 }
 
-void* array_remove_item(Array* arr, size_t index)
+/**
+ * Remove an existing element from the array.
+ * 
+ * array: Array instance that should be deleted.
+ * index: The requested element's index in the array.
+ * */
+void array_remove_element(Array* array, size_t index)
 {
-    void* value = arr->arr[index].element;
-    for (size_t i = index + 1; i < arr->size; i++)
+    for (size_t i = index + 1; i < array->size; i++)
     {
-        memcpy(arr->arr[i - 1].element, arr->arr[i].element, arr->item_size);
+        memcpy(array->arr[i - 1].element, array->arr[i].element, array->item_size);
     }
 
-    arr->size--;
-    free(arr->arr[arr->size].element);
+    array->size--;
+    free(array->arr[array->size].element);
+}
 
-    return value;
+/**
+ * Return an element in the array as a void pointer.
+ * 
+ * array: Array instance that should be deleted.
+ * index: The requested element's index in the array.
+ * 
+ * Returns: The requested element as a void pointer.
+ * */
+void* get_element(Array* array, size_t index)
+{
+    return array->arr[index].element;
 }

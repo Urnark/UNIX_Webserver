@@ -9,9 +9,10 @@ int new_thread(void*(*func)(void*))
 {
 	thread_info ti;
 	ti.id = array.size;
-	array_push_item(&array, &ti);
-	printf("Array size: %d, capacity: %d, s: %d\n", array.size, array.capacity, array.item_size);
-	return pthread_create(&((thread_info*)array.arr[array.size - 1].element)->thread, NULL, func,(void*) ti.id);
+	array_push_element(&array, (void*)&ti);
+	//printf("Array size: %zu, capacity: %zu, s: %zu\n", array.size, array.capacity, array.item_size);
+	thread_info* thread_i = &get(thread_info, array, array.size - 1);
+	return pthread_create(&(thread_i->thread), NULL, func,(void*) &(thread_i->id));
 }
 
 void terminate_threads()
