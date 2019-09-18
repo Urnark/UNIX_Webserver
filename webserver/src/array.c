@@ -22,10 +22,6 @@ void create_array(Array* array, size_t item_size, size_t capacity)
  * */
 void delete_array(Array* array)
 {
-    for (int i = 0; i < array->size; i++)
-    {
-        free(array->arr[i].element);
-    }
     free(array->arr);
 }
 
@@ -46,15 +42,16 @@ void _check_expand(Array* array)
 /**
  * Add a new element at the end of the array.
  * 
- * array: Array instance that should be deleted.
+ * array: Array instance that should be used.
  * value: The new element.
  * */
 void array_push_element(Array* array, void* value)
 {
     _check_expand(array);
 
-    array->arr[array->size].element = malloc(array->item_size);
-    memcpy(array->arr[array->size].element, value, array->item_size);
+    /*array->arr[array->size].element = malloc(array->item_size);
+    memcpy(array->arr[array->size].element, value, array->item_size);*/
+    array->arr[array->size].element = value;
     array->size++;
 }
 
@@ -68,11 +65,10 @@ void array_remove_element(Array* array, size_t index)
 {
     for (size_t i = index + 1; i < array->size; i++)
     {
-        memcpy(array->arr[i - 1].element, array->arr[i].element, array->item_size);
+        array->arr[i - 1].element = array->arr[i].element;
     }
 
     array->size--;
-    free(array->arr[array->size].element);
 }
 
 /**
@@ -83,7 +79,7 @@ void array_remove_element(Array* array, size_t index)
  * 
  * Returns: The requested element as a void pointer.
  * */
-void* get_element(Array* array, size_t index)
+void* get(Array* array, size_t index)
 {
     return array->arr[index].element;
 }

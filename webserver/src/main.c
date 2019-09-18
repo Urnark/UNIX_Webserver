@@ -8,14 +8,14 @@
 
 void* printMessage(void* threadid)
 {
-    printf("\n%d: Hello World!\n",*(int*) threadid);
-	pthread_exit(NULL);
+    printf("%d: Hello World!\n",*(int*) threadid);
+
+	exit_thread(*(int*)threadid);
 }
 
 int main(int argc, char const *argv[])
 {
-	//init_threads(3);
-	set_ip_type(0);
+	/*set_ip_type(0);
 	set_port(4444);
 	set_protocol(0);
 	createSocket(10);
@@ -28,8 +28,11 @@ int main(int argc, char const *argv[])
 	}
 
 	close(client.socket);
-	closeServer();
-	/*for (int rc = 0, i = 0; i < NUM_THREADS; i++)
+	closeServer();*/
+
+	init_threads(3);
+
+	for (int rc = 0, i = 0; i < NUM_THREADS; i++)
 	{
 		rc = new_thread(printMessage);
 		if (rc) {
@@ -37,9 +40,9 @@ int main(int argc, char const *argv[])
 			exit(-1);
 		}
 	
-	}*/
+	}
 
-	//terminate_threads();
+	terminate_threads();
 
     return 0;
 }

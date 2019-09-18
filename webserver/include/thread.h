@@ -7,15 +7,21 @@
 
 #include "../include/array.h"
 
-Array array;
+Array _array;
 
-typedef struct {
+typedef struct thread_info{
 	int id;
 	pthread_t thread;
-} thread_info;
+} Thread_info;
+
+static int NEW_ID = 0;
 
 void init_threads(int capacity);
 int new_thread(void*(*func)(void*));
 void terminate_threads();
+
+pthread_mutex_t thread_mutex;
+
+void exit_thread(int thread_id);
 
 #endif

@@ -2,24 +2,56 @@
 
 void init_threads(int capacity)
 {
-	create_array(&array, sizeof(thread_info), capacity);
+	create_array(&_array, sizeof(Thread_info), capacity);
+	pthread_mutex_init(&thread_mutex, NULL);
 }
 
 int new_thread(void*(*func)(void*))
 {
-	thread_info ti;
-	ti.id = array.size;
-	array_push_element(&array, (void*)&ti);
+	pthread_mutex_lock(&thread_mutex);
+
+	Thread_info* ti = (Thread_info*)malloc(sizeof(Thread_info));
+	ti->id = NEW_ID++;
+	array_push_element(&_array, (void*)ti);
+
+	pthread_mutex_unlock(&thread_mutex);
+
 	//printf("Array size: %zu, capacity: %zu, s: %zu\n", array.size, array.capacity, array.item_size);
-	thread_info* thread_i = &get(thread_info, array, array.size - 1);
+	Thread_info* thread_i = (Thread_info*)get(&_array, _array.size - 1);
 	return pthread_create(&(thread_i->thread), NULL, func,(void*) &(thread_i->id));
 }
 
 void terminate_threads()
 {
-	for (int i = 0; i < array.size; i++)
+	pthread_mutex_destroy(&thread_mutex);
+
+	for (int i = 0; i < _array.size; i++)
 	{
-		pthread_join(((thread_info*)array.arr[i].element)->thread, NULL);
+		pthread_join(((Thread_info*)get(&_array, i))->thread, NULL);
 	}
-	delete_array(&array);
+
+	// Because the Thread_info is allocated on the heap, free needs to be called
+	for (int i = 0; i < _array.size; i++)
+    {
+        free(get(&_array, i));
+    }
+	// Deallocate the array
+	delete_array(&_array);
+}
+
+void exit_thread(int thread_id)
+{
+	pthread_mutex_lock(&thread_mutex);
+
+	for (int i = 0; i < _array.size; i++)
+	{
+		if (((Thread_info*)get(&_array, i))->id == thread_id)
+		{
+			array_remove_element(&_array, i);
+			break;
+		}
+	}
+
+	pthread_mutex_unlock(&thread_mutex);
+	pthread_exit(NULL);
 }
