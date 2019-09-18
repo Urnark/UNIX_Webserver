@@ -22,7 +22,7 @@ int set_protocol (int i)
     }else if(i = 1){
         protocol_type = "SOCK_DGRAM";
     }else{
-        error("Could not properly set the protocoltype.")
+        error("Could not properly set the protocoltype.");
     }
     return(0);
 }
@@ -62,7 +62,7 @@ int createSocket (int queuelength, int portnumber)
 
     server_address.sin_family = protocol_type;
     server_address.sin_port = portnumber;
-    server_address.sin_addr.s_addr = INADOR_ANY; //reads own IP address
+    server_address.sin_addr.s_addr = INADDR_ANY; //reads own IP address
 
     if((bind(server_socket, (struct sockaddr *) &server_address, sizeof(server_address))) < 0){
         error("Could not bind the socket.");
