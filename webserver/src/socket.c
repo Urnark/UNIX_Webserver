@@ -6,6 +6,7 @@
 char * ip_type, protocol_type;
 struct sockaddr_in server_address, client_address;
 int portnumber;
+int server_socket;
 
 void error(char * message)
 {
@@ -34,7 +35,7 @@ int set_ip_type (int i)
     }else if(i == 1){
         ip_type = "AF_INET6";
     }else{
-        error("Could not properly set the IP_type.")
+        error("Could not properly set the IP_type.");
     }
     return(0);
 }
@@ -42,10 +43,10 @@ int set_ip_type (int i)
 //Sets the portnumber
 int set_port (int i)
 {
-    if(() 0 < i) && (i < 65535){
+    if(( 0 < i) && (i < 65535)){
         portnumber = i;
     }else{
-        error("That is not a valid port.")
+        error("That is not a valid port.");
     }
     return(0);
 }
@@ -53,10 +54,8 @@ int set_port (int i)
 //Creates the server_socket and bind it to the port to listen.
 int createSocket (int queuelength, int portnumber)
 {
-    int server_socket;
-
     if((server_socket = socket(ip_type, protocol_type, 0)) < 0){
-        error("Could not create the socket_descriptor.")
+        error("Could not create the socket_descriptor.");
     }
 
     //if further settings neccessary use setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen)?
@@ -66,15 +65,15 @@ int createSocket (int queuelength, int portnumber)
     server_address.sin_addr.s_addr = INADOR_ANY; //reads own IP address
 
     if((bind(server_socket, (struct sockaddr *) &server_address, sizeof(server_address))) < 0){
-        error("Could not bind the socket.")
+        error("Could not bind the socket.");
     }
 
     if((listen(server_socket, queuelength)) < 0){
-        error("Server could not be set to listen.")
+        error("Server could not be set to listen.");
     }
 
-    printf("Successfully created Server_Socket")  // delete if not needed.
-    return(0);
+    printf("Successfully created Server_Socket");  // delete if not needed.
+    return 0;
 }
 
 //accept a client.
@@ -83,9 +82,9 @@ int connectToClient()
     int new_socket;
 
     if((new_socket = accept(server_socket, (struct sockaddr *) &client_address, sizeof(client_address))) < 0){
-        error("Could not accept the client.")
+        error("Could not accept the client.");
     }
 
-    printf("Successfully connected.")  // delete if not needed.
-    return(0);
+    printf("Successfully connected.");  // delete if not needed.
+    return 0;
 }
