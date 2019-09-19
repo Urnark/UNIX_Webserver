@@ -6,8 +6,9 @@
 
 #include "../include/threadManager.h"
 #include "../include/socket.h"
+#include "../include/request.h"
 
-#define NUM_THREADS 5
+#define START_NUM_THREADS 5
 
 typedef struct thread_args{
 	int id;
@@ -19,18 +20,14 @@ void* client_thread(void* args)
 	int thread_id = ((Thread_args*)args)->id;
 	Client* client = &((Thread_args*)args)->client;
 
-    printf("%d: Hello World!\n", ((Thread_args*)args)->id);
+    printf("%d: Start Connection!\n", ((Thread_args*)args)->id);
 
-	char buf[512] = "Hello!\n";
+	int result_code = request_recived(client);
+
+	char buf[512] = "End Connection!\n";
 	if(send(client->socket, buf, 8, 0) == -1) {
 		fprintf(stderr, "ERROR: Can not send 'Hello' to the client.\n");
 	}
-
-	memset(buf, 0, sizeof(buf));
-	if (recv(client->socket, buf, sizeof(buf), 0) == -1) {
-		fprintf(stderr, "ERROR: Can not recive string from the client.\n");
-	}
-	printf("From client [%d]: %s", thread_id, buf);
 
 	close(client->socket);
 	thread_manager_exit_thread(thread_id);
@@ -71,13 +68,13 @@ int main(int argc, char const *argv[])
 	createSocket(10);
 	setToNonBlocking();
 
-	thread_manager_init_threads(NUM_THREADS);
+	thread_manager_init_threads(START_NUM_THREADS);
+
+	set_path_to_www_folder();
 
 	int running = 1;
-	while (running)
+	while (shoudlStopRunning(running))
 	{
-		running = shoudlStopRunning(running);
-
 		int accept_connection;
 		Client client = connectToClient(&accept_connection);
 		if (accept_connection == 1)
