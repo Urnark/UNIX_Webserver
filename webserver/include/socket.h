@@ -11,6 +11,7 @@ int ip_type, protocol_type;
 struct sockaddr_in server_address;
 int portnumber;
 int server_socket;
+int server_socket_opt;
 
 typedef struct
 {
@@ -23,7 +24,9 @@ int set_protocol (int i);
 int set_ip_type (int i);
 int set_port (int i);
 int createSocket (int queuelength);
-Client connectToClient();
+Client connectToClient(int* accept_connection);
 void closeServer();
+void setToNonBlocking();
+void resetFlags();
 
 #endif

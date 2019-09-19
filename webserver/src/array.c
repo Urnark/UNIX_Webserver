@@ -7,12 +7,12 @@
  * item_size: Each elements size in bytes.
  * capacity: How many elements it should allocate space for.
  * */
-void create_array(Array* array, size_t item_size, size_t capacity)
+void array_create_array(Array* array, size_t item_size, size_t capacity)
 {
     array->item_size = item_size;
     array->size = 0;
     array->capacity = capacity;
-    array->arr = malloc(sizeof(Element) * array->capacity);
+    array->arr = malloc(sizeof(_array_Element) * array->capacity);
 }
 
 /**
@@ -20,7 +20,7 @@ void create_array(Array* array, size_t item_size, size_t capacity)
  * 
  * array: Array instance that should be deleted.
  * */
-void delete_array(Array* array)
+void array_delete_array(Array* array)
 {
     free(array->arr);
 }
@@ -30,12 +30,12 @@ void delete_array(Array* array)
  * 
  * array: Array instance that should be initilized.
  * */
-void _check_expand(Array* array)
+void _array_check_expand(Array* array)
 {
     if (array->size == array->capacity)
     {
         array->capacity *= 2;
-        array->arr = (Element*)realloc(array->arr, array->capacity *sizeof(Element));
+        array->arr = (_array_Element*)realloc(array->arr, array->capacity *sizeof(_array_Element));
     }
 }
 
@@ -47,7 +47,7 @@ void _check_expand(Array* array)
  * */
 void array_push_element(Array* array, void* value)
 {
-    _check_expand(array);
+    _array_check_expand(array);
 
     /*array->arr[array->size].element = malloc(array->item_size);
     memcpy(array->arr[array->size].element, value, array->item_size);*/
@@ -79,7 +79,7 @@ void array_remove_element(Array* array, size_t index)
  * 
  * Returns: The requested element as a void pointer.
  * */
-void* get(Array* array, size_t index)
+void* array_get(Array* array, size_t index)
 {
     return array->arr[index].element;
 }

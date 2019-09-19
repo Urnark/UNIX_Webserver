@@ -1,4 +1,6 @@
 #include "../include/socket.h"
+#include <fcntl.h>
+#include <errno.h>
 
 void error(char * message)
 {
@@ -70,24 +72,47 @@ int createSocket (int queuelength)
         error("Server could not be set to listen.");
     }
 
+    // Save socket flags
+    server_socket_opt = fcntl(server_socket, F_GETFL, NULL);
+
     printf("Successfully created Server_Socket\n");  // delete if not needed.
     return 0;
 }
 
 //accept a client.
-Client connectToClient()
+Client connectToClient(int* accept_connection)
 {
     Client client;
     int addrlen = sizeof(client.client_address);
+    
+    *accept_connection = 0;
     if((client.socket = accept(server_socket, (struct sockaddr *) &client.client_address, (socklen_t*) &addrlen)) < 0){
-        error("Could not accept the client.");
+        if (errno != EWOULDBLOCK)
+        {
+            error("Could not accept the client.");
+        }
+    }
+    else
+    {
+        *accept_connection = 1;
+        printf("Successfully connected.\n");  // delete if not needed.
     }
 
-    printf("Successfully connected.\n");  // delete if not needed.
     return client;
 }
 
 void closeServer()
 {
+    resetFlags();
     close(server_socket);
+}
+
+void setToNonBlocking()
+{
+    fcntl (server_socket, F_SETFL, server_socket_opt | O_NONBLOCK);
+}
+
+void resetFlags()
+{
+    fcntl (server_socket, F_SETFL, server_socket_opt);
 }
