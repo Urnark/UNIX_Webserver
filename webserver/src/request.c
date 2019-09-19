@@ -16,7 +16,6 @@ void set_path_to_www_folder()
 
     // Add www to the path
     strcat(path_www_folder, "/www");
-    printf("Server dir: %s\n", path_www_folder);
 }
 
 int request_recived(Client* client)
@@ -94,8 +93,6 @@ int request_recived(Client* client)
     char path[PATH_MAX];
     char *real_uri = realpath(uri, path);
     if (real_uri) {
-        printf("This path is at %s.\n", path);
-        printf("This path_www_folder is at %s.\n", path_www_folder);
         if (strlen(path) > strlen(path_www_folder))
         {
             if (strncmp(path_www_folder, path, strlen(path_www_folder)) != 0)
@@ -105,8 +102,9 @@ int request_recived(Client* client)
             }
             else
             {
-                // Cech length of paths?
-                // Good path
+                printf("200 OK\n");
+                printf("Request: %s %s %s\n", (type == RT_GET? "GET": (type == RT_HEAD? "HEAD": "NONE")), real_uri, (protocol_version? "HTTP/1.0": "NONE"));
+                return 200;
             }
         }
         else
@@ -118,6 +116,4 @@ int request_recived(Client* client)
         printf("404 Not Found\n");
         return 404;
     }
-
-    printf("Request: %s %s %s\n", (type == RT_GET? "GET": (type == RT_HEAD? "HEAD": "NONE")), real_uri, (protocol_version? "HTTP/1.0": "NONE"));
 }
