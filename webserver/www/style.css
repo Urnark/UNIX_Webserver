@@ -1,0 +1,56 @@
+body {
+	background-color: lightgrey;	
+}
+
+header{
+	text-align:center;
+	color:darkgrey;
+}
+
+footer{
+	border-top-width: 2px;
+    border-top-style: solid;
+    margin-top: 75px;
+	size:70%;
+	color:grey;
+}
+
+.card {
+	height:200px;
+	width:140px;
+}
+
+#zerodiv{
+	text-align:center;
+	color:#ED7864;
+}
+
+#firstdiv{
+	position:relative;
+	z-index: 1;
+  	top: 70px;
+  	left: 40px;
+  	
+}
+
+#seconddiv{
+	margin: 0 auto;
+	width: 300px;
+	position: relative;
+  	z-index: 2;
+}
+
+#thirddiv{
+	float:left;
+	position: relative;
+  	z-index: 1;
+  	top: 30px;
+  	left: 10px;
+}
+
+#fourthdiv{
+	position: relative;
+  	z-index: 1;
+  	top: -10px;
+  	left: -40px;
+}
