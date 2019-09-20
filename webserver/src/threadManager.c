@@ -45,8 +45,9 @@ void thread_manager_terminate_threads()
 	array_delete_array(&_thread_manager_array);
 }
 
-void thread_manager_exit_thread(int thread_id)
+void thread_manager_exit_thread(void* args)
 {
+	int thread_id = *(int*)args;
 	pthread_mutex_lock(&_thread_manager_thread_mutex);
 
 	for (int i = 0; i < _thread_manager_array.size; i++)
@@ -54,10 +55,12 @@ void thread_manager_exit_thread(int thread_id)
 		if (((_thread_manager_Thread_info*)array_get(&_thread_manager_array, i))->id == thread_id)
 		{
 			array_remove_element(&_thread_manager_array, i);
+			free(((_thread_manager_Thread_info*)array_get(&_thread_manager_array, _thread_manager_array.size)));
 			break;
 		}
 	}
 
 	pthread_mutex_unlock(&_thread_manager_thread_mutex);
+	free(args);
 	pthread_exit(NULL);
 }
