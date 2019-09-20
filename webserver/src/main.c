@@ -7,6 +7,7 @@
 #include "../include/threadManager.h"
 #include "../include/socket.h"
 #include "../include/request.h"
+#include "../include/response.h"
 
 #define START_NUM_THREADS 5
 
@@ -23,6 +24,7 @@ void* client_thread(void* args)
     printf("%d: Start Connection!\n", ((Thread_args*)args)->id);
 
 	int result_code = request_recived(client);
+	send_response(result_code, client);
 
 	char buf[512] = "End Connection!\n";
 	if(send(client->socket, buf, 8, 0) == -1) {
