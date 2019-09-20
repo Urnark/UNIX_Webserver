@@ -1,59 +1,89 @@
 #include "../include/response.h"
+#include <string.h>
+#include <stdlib.h>
 
-int content;
-
-int define_content()
+char* define_content(Request_t* request)
 {
-    //define content to send? index.html?
+    char * buffer = NULL;
+    long length;
+    FILE * f = fopen(request->path, "rd");
+ 
+    if (f)
+    {
+        fseek(f, 0, SEEK_END);
+        length = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        buffer = malloc(length);
+        if (buffer)
+        {
+            fread(buffer, 1, length, f);
+        }
+        fclose(f);
+    }
+
+    return buffer;
 }
 
-char get_server_time()
+char* get_server_time(char* time_string)
 {
-    char time_string[256] = {0};
+    time_string = malloc(256);
     time_t rawtime = time(NULL);
     struct tm *ptm = localtime(&rawtime);
     strftime(time_string, 256, "%a, %d %b %Y %T %Z", ptm);
     return time_string;
 }
 
-int send_response(int code, Client *client)
+int send_response(Request_t* request, Client *client)
 {
-    int code_notice;
-    switch (code)
+    printf("Response\n");
+    char code_notice[22];
+    switch (request->response_code)
     {
     case 200:
-        code_notice = "OK";
+        strcpy(code_notice, "OK");
         break;
     case 400:
-        code_notice = "Bad Request";
+        strcpy(code_notice, "Bad Request");
         break;
     case 403:
-        code_notice = "Forbidden";
+        strcpy(code_notice, "Forbidden");
         break;
     case 404:
-        code_notice = "Not Found";
+        strcpy(code_notice, "Not Found");
         break;
     case 500:
-        code_notice = "Internal Server Error";
+        strcpy(code_notice, "Internal Server Error");
         break;
     case 501:
-        code_notice = "Not Implemented";
+        strcpy(code_notice, "Not Implemented");
         break;
     }
-    int connection = "connected";
-    char server_date = get_server_time;
-    int servername = "Card Server";
-    int content_type = "text/html; charset=UTF-8";
-    int content_length = sizeof(content);
-    int client_date = "?";         //get out of Client
-    int client_peer = "!";         //get out of Client
-    int client_response_num = "x"; //count request-responses
+    char connection[] = "connected";
+    char* server_date = get_server_time(server_date);
+    char servername[] = "Card Server";
+    char content_type[] = "text/html; charset=UTF-8";
+    char* content = define_content(request);
+    int content_length = strlen(content);
+    char client_date[] = "?";         //get out of Client
+    char client_peer[] = "!";         //get out of Client
+    char client_response_num[] = "x"; //count request-responses
 
-    char response[256];
-    sprintf(response, "HTTP/1.1 %d %d\nConnection: %d\nDate: %d\nServer: %d\nContent-Type: %d\nContent-Length: %d\nClient-Date: %d\nClient-Peer: %d\nClient-Response-Num: %d\n %d", code, code_notice, connection, server_date, servername, content_type, content_length, client_date, client_peer, client_response_num, content);
-
-    if (send(client->socket, response, 147, 0) == -1)
+    size_t size = strlen(connection) + strlen(server_date) + strlen(servername) + strlen(content_type) + strlen(content) + 
+        sizeof(content_length) + strlen(client_date) + strlen(client_peer) + strlen(client_response_num) + 149;
+    char* response = malloc(size);
+    
+    sprintf(response, "HTTP/1.1 %d %s\nConnection: %s\nDate: %s\nServer: %s\nContent-Type: %s\nContent-Length: %d\nClient-Date: %s\nClient-Peer: %s\nClient-Response-Num: %s\n\n %s\n", 
+        request->response_code, code_notice, connection, server_date, servername, content_type, content_length, client_date, client_peer, client_response_num, content);
+    
+    
+    if (send(client->socket, response, size, 0) == -1)
     {
         fprintf(stderr, "ERROR: Can not send response to the client.\n");
     }
+
+    printf("%s\n", response);
+
+    free(response);
+    free(content);
+    free(server_date);
 }

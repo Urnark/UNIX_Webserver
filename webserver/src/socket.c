@@ -1,6 +1,8 @@
 #include "../include/socket.h"
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/time.h>
+#include <string.h>
 
 void error(char * message)
 {
@@ -53,11 +55,16 @@ int createSocket (int queuelength)
     }
 
     int true = 1;
-    if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &true, sizeof(int)) < 0){
-        error("Could not set socket options.");
+    if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &true, sizeof(true)) < 0){
+        error("Could not set socket option [SO_REUSEADDR].");
     }
-
-    //if further settings neccessary use setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen)?
+    
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 5000;
+    if (setsockopt(server_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)) < 0){
+        error("Could not set socket options [SO_RCVTIMEO].");
+    }
 
 	memset(&server_address, 0, sizeof(server_address));
     server_address.sin_family = ip_type;

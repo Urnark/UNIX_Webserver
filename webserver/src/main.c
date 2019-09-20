@@ -24,14 +24,15 @@ void* client_thread(void* args)
     printf("%d: Start Connection!\n", ((Thread_args*)args)->id);
 
 	Request_t request = request_recived(client);
-	send_response(result_code, client);
+	send_response(&request, client);
 
 	char buf[512] = "End Connection!\n";
 	if(send(client->socket, buf, 16, 0) == -1) {
 		fprintf(stderr, "ERROR: Can not send 'Hello' to the client.\n");
 	}
 
-	close(client->socket);
+	//close(client->socket);
+	shutdown(client->socket, SHUT_WR);
 	thread_manager_exit_thread(args);
 }
 
@@ -72,7 +73,7 @@ int main(int argc, char const *argv[])
 
 	thread_manager_init_threads(START_NUM_THREADS);
 
-	set_path_to_www_folder();
+	request_init();
 
 	int running = 1;
 	while (shoudStopRunning(running))
@@ -90,6 +91,7 @@ int main(int argc, char const *argv[])
 			}
 		}
 	}
+	request_stop_reciving_data = 1;
 
 	thread_manager_terminate_threads();
 	closeServer();

@@ -2,9 +2,11 @@
 #define RESPONSE_H
 #include <time.h>
 #include <stdio.h>
+#include "socket.h"
+#include "request.h"
 
-int define_content();
-char get_server_time();
-int send_response(int code, Client *client);
+char* define_content(Request_t* request);
+char* get_server_time();
+int send_response(Request_t* request, Client *client);
 
 #endif

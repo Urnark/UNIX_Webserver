@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
-void set_path_to_www_folder()
+void _set_path_to_www_folder()
 {
     // Get current working directory
     getcwd(path_www_folder, sizeof(path_www_folder));
@@ -18,22 +19,53 @@ void set_path_to_www_folder()
     strcat(path_www_folder, "/www");
 }
 
+void request_init()
+{
+    request_stop_reciving_data = 0;
+    _set_path_to_www_folder();
+}
+
 Request_t request_recived(Client* client)
+{
+    char request[PATH_MAX];
+    while (!request_stop_reciving_data)
+    {
+        if (recv(client->socket, request, sizeof(request), 0) == -1) {
+            if (errno != EWOULDBLOCK)
+            {
+                fprintf(stderr, "ERROR: Can not recive the request from the client.\n");
+                Request_t request_type;
+                request_type.response_code = 500;
+                request_type.simple = 1;
+                request_type.type = RT_NONE;
+                return request_type;
+            }
+	    }
+        else
+        {
+            printf("%s\n", request);
+            return _process_request(request);
+        }
+        
+    }
+    Request_t request_type;
+    request_type.response_code = 503;
+    request_type.simple = 1;
+    request_type.type = RT_NONE;
+    return request_type;
+}
+
+Request_t _process_request(char* request)
 {
     Request_t request_ret;
     request_ret.simple = 0;
     request_ret.type = RT_NONE;
 
-    char request[PATH_MAX];
-	if (recv(client->socket, request, sizeof(request), 0) == -1) {
-		fprintf(stderr, "ERROR: Can not recive the request from the client.\n");
-	}
-
     char* pch;
     pch = strtok(request, " ");
 
     // Remove the first token from the request.
-    char uri[1024];
+    char uri[PATH_MAX];
     strcat(uri, "../www");
     int protocol_version = 0;
     int count = 0;
@@ -73,10 +105,21 @@ Request_t request_recived(Client* client)
                 {
                     protocol_version = 1;
                 }
+                else if (strncmp(pch, "HTTP/0.9", 8) == 0)
+                {
+                    request_ret.simple = 1;
+                    uri[strlen(uri) - 2] = '\0';
+                }
+                else if (strncmp(pch, "HTTP/1.1", 8) == 0)
+                {
+                    /*printf("501 Not Implemented\n");
+                    request_ret.response_code = 501;
+                    return request_ret;*/
+                }
                 else
                 {
-                    printf("501 Not Implemented\n"); // Or Bad Request? Get this if request is: GET SP /index.html SP
-                    request_ret.result_code = 501;
+                    printf("400 Bad Request\n");
+                    request_ret.response_code = 400;
                     return request_ret;
                 }
                 count++;
@@ -85,9 +128,9 @@ Request_t request_recived(Client* client)
         case 3:
             if (pch != NULL)
             {
-                printf("400 Bad Request\n");
-                request_ret.result_code = 400;
-                return request_ret;
+                /*printf("400 Bad Request\n");
+                request_ret.response_code = 400;
+                return request_ret;*/
             }
             break;
         }
@@ -96,7 +139,7 @@ Request_t request_recived(Client* client)
     if (count < 2)
     {
         printf("400 Bad Request\n");
-        request_ret.result_code = 400;
+        request_ret.response_code = 400;
         return request_ret;
     }
     else if (count == 2)
@@ -117,12 +160,12 @@ Request_t request_recived(Client* client)
             if (strcmp(methods[i], first) == 0)
             {
                 printf("501 Not Implemented\n");
-                request_ret.result_code = 501;
+                request_ret.response_code = 501;
                 return request_ret;
             }
         }
         printf("400 Bad Request\n");
-        request_ret.result_code = 400;
+        request_ret.response_code = 400;
         return request_ret;
     }
 
@@ -136,7 +179,7 @@ Request_t request_recived(Client* client)
             if (strncmp(path_www_folder, path, strlen(path_www_folder)) != 0)
             {
                 printf("403 Forbidden\n");
-                request_ret.result_code = 403;
+                request_ret.response_code = 403;
                 return request_ret;
             }
             else
@@ -147,19 +190,19 @@ Request_t request_recived(Client* client)
                     real_uri, 
                     (protocol_version? "HTTP/1.0": (request_ret.simple? "HTTP/0.9":"NONE")));
                 strcpy(request_ret.path, real_uri);
-                request_ret.result_code = 200;
+                request_ret.response_code = 200;
                 return request_ret;
             }
         }
         else
         {
             printf("403 Forbidden\n");
-            request_ret.result_code = 403;
+            request_ret.response_code = 403;
             return request_ret;
         }
     } else {
         printf("404 Not Found\n");
-        request_ret.result_code = 404;
+        request_ret.response_code = 404;
         return request_ret;
     }
 }
