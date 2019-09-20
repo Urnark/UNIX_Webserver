@@ -23,19 +23,19 @@ void* client_thread(void* args)
 
     printf("%d: Start Connection!\n", ((Thread_args*)args)->id);
 
-	int result_code = request_recived(client);
+	Request_t request = request_recived(client);
 	send_response(result_code, client);
 
 	char buf[512] = "End Connection!\n";
-	if(send(client->socket, buf, 8, 0) == -1) {
+	if(send(client->socket, buf, 16, 0) == -1) {
 		fprintf(stderr, "ERROR: Can not send 'Hello' to the client.\n");
 	}
 
 	close(client->socket);
-	thread_manager_exit_thread(thread_id);
+	thread_manager_exit_thread(args);
 }
 
-int shoudlStopRunning(int running)
+int shoudStopRunning(int running)
 {
 	// For checking if the server should be terminated.
 	int retval;
@@ -75,15 +75,15 @@ int main(int argc, char const *argv[])
 	set_path_to_www_folder();
 
 	int running = 1;
-	while (shoudlStopRunning(running))
+	while (shoudStopRunning(running))
 	{
 		int accept_connection;
 		Client client = connectToClient(&accept_connection);
 		if (accept_connection == 1)
 		{
-			Thread_args args;
-			args.client = client;
-			int rc = thread_manager_new_thread(client_thread, (void*)&args);
+			Thread_args* args = malloc(sizeof(Thread_args));
+			args->client = client;
+			int rc = thread_manager_new_thread(client_thread, (void*)args);
 			if (rc) {
 				fprintf(stderr, "ERROR: pthread_create() returned %d\n", rc);
 				exit(-1);

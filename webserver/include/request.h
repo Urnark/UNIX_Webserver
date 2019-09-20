@@ -11,9 +11,17 @@ typedef enum {
     RT_NONE
 } Request_type;
 
+typedef struct request_t
+{
+    int simple;
+    int result_code;
+    char path[PATH_MAX];
+    Request_type type;
+} Request_t;
+
 char path_www_folder[PATH_MAX];
 
 void set_path_to_www_folder();
-int request_recived(Client* client);
+Request_t request_recived(Client* client);
 
 #endif

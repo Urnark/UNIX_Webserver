@@ -40,6 +40,6 @@ void thread_manager_terminate_threads();
 
 pthread_mutex_t _thread_manager_thread_mutex;
 
-void thread_manager_exit_thread(int thread_id);
+void thread_manager_exit_thread(void* args);
 
 #endif
