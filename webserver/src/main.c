@@ -23,7 +23,7 @@ void* client_thread(void* args)
 
     printf("%d: Start Connection!\n", ((Thread_args*)args)->id);
 
-	Request_t request = request_recived(client);
+	Request_t request = request_received(client);
 	send_response(&request, client);
 	free_headers(&request.headers);
 
