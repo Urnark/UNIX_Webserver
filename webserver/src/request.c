@@ -317,7 +317,6 @@ Request_t request_received(Client* client)
     while (!request_stop_reciving_data)
     {
         gettimeofday(&now, NULL);
-        printf("START Time: %ld, NOW time: %ld, ELAPSED time: %ld\n", start.tv_sec, now.tv_sec, (now.tv_sec - start.tv_sec));
         if (now.tv_sec - start.tv_sec >= REQUEST_TIMEOUT_SEC)
         {
             printf("408 Request Timeout\n");
