@@ -5,6 +5,8 @@
 
 #include "../include/socket.h"
 
+#define REQUEST_TIMEOUT_SEC 60
+
 typedef enum request_type{
     RT_GET,
     RT_HEAD,
@@ -52,6 +54,6 @@ int _check_http_version(Request_t* request, char* method);
 int _check_uri(Request_t* request, char* method);
 Request_t _process_request(char* request);
 void request_init();
-Request_t request_recived(Client* client);
+Request_t request_received(Client* client);
 
 #endif

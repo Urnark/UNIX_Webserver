@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/time.h>
 
 //  GET /favicon.ico HTTP/1.1
 //  Host: localhost:4444
@@ -307,18 +308,33 @@ void request_init()
     _set_path_to_www_folder();
 }
 
-Request_t request_recived(Client* client)
+Request_t request_received(Client* client)
 {
+    struct timeval start, now;
+    gettimeofday(&start, NULL);
+
     char request[PATH_MAX];
     while (!request_stop_reciving_data)
     {
+        gettimeofday(&now, NULL);
+        printf("START Time: %ld, NOW time: %ld, ELAPSED time: %ld\n", start.tv_sec, now.tv_sec, (now.tv_sec - start.tv_sec));
+        if (now.tv_sec - start.tv_sec >= REQUEST_TIMEOUT_SEC)
+        {
+            printf("408 Request Timeout\n");
+            Request_t request_type;
+            request_type.response_code = 408;
+            request_type.http_version = HTTP_none;
+            request_type.type = RT_NONE;
+            return request_type;
+        }
         if (recv(client->socket, request, sizeof(request), 0) == -1) {
             if (errno != EWOULDBLOCK)
             {
                 fprintf(stderr, "ERROR: Can not recive the request from the client.\n");
+                printf("500 Internal Server Error\n");
                 Request_t request_type;
                 request_type.response_code = 500;
-                request_type.http_version = HTTP_0_9;
+                request_type.http_version = HTTP_none;
                 request_type.type = RT_NONE;
                 return request_type;
             }
@@ -330,9 +346,10 @@ Request_t request_recived(Client* client)
         }
         
     }
+    printf("503 Service Unavailable\n");
     Request_t request_type;
     request_type.response_code = 503;
-    request_type.http_version = HTTP_0_9;
+    request_type.http_version = HTTP_none;
     request_type.type = RT_NONE;
     return request_type;
 }
