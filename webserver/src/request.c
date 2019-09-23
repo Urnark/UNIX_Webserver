@@ -55,7 +55,7 @@ void _set_path_to_www_folder()
     strcat(path_www_folder, "/www");
 }
 
-void _free_headers(Headers* headers)
+void free_headers(Headers* headers)
 {
     free(headers->accept);
     free(headers->accept_encoding);
@@ -65,6 +65,18 @@ void _free_headers(Headers* headers)
     free(headers->host);
     free(headers->referer);
     free(headers->user_agent);
+}
+
+void _init_headers(Headers* headers)
+{
+    headers->accept = NULL;
+    headers->accept_encoding = NULL;
+    headers->accept_language = NULL;
+    headers->connection = NULL;
+    headers->method = NULL;
+    headers->host = NULL;
+    headers->referer = NULL;
+    headers->user_agent = NULL;
 }
 
 int _set_header(char** header, char* current_line, const char* comp_str)
@@ -134,6 +146,7 @@ int _check_http_version(Request_t* request, char* method)
     {
         printf("400 Bad Request, http version length not matching\n");
         request->response_code = 400;
+        request->http_version = HTTP_none;
         return 1; 
     }
     
@@ -155,6 +168,7 @@ int _check_http_version(Request_t* request, char* method)
     
     printf("400 Bad Request, http version not real\n");
     request->response_code = 400;
+    request->http_version = HTTP_none;
     return 1;
 }
 
@@ -224,8 +238,7 @@ Request_t _process_request(char* request)
     request_ret.http_version = HTTP_1_0;
     request_ret.type = RT_NONE;
     request_ret.response_code = 200;
-
-    Headers headers = {NULL};
+    _init_headers(&request_ret.headers);
 
     if (strlen(request) < 3)
     {
@@ -243,9 +256,9 @@ Request_t _process_request(char* request)
             *next_line = '\0';
         
         if (current_line == request)
-            get_head_none = _populate_headers(&headers, current_line);
+            get_head_none = _populate_headers(&request_ret.headers, current_line);
         else
-            _populate_headers(&headers, current_line);
+            _populate_headers(&request_ret.headers, current_line);
 
         if (next_line)
             *next_line = '\n';
@@ -261,17 +274,14 @@ Request_t _process_request(char* request)
         first_word = request;
         if (_check_method(&request_ret, get_head_none, first_word))
         {
-            _free_headers(&headers);
             return request_ret;
         }
-        if (_check_http_version(&request_ret, headers.method))
+        if (_check_http_version(&request_ret, request_ret.headers.method))
         {
-            _free_headers(&headers);
             return request_ret;
         }
-        if (_check_uri(&request_ret, headers.method))
+        if (_check_uri(&request_ret, request_ret.headers.method))
         {
-            _free_headers(&headers);
             return request_ret;
         }
     }
@@ -279,16 +289,15 @@ Request_t _process_request(char* request)
     {
         printf("400 Bad Request\n");
         request_ret.response_code = 400;
-        _free_headers(&headers);
         return request_ret;
     }
 
     printf("Method: %s | %s | %s\nHost: %s\nUser-Agent: %s\nAccept: %s\nAccept-Language: %s\nAccept-Encoding: %s\nConnection: %s\nReferer: %s\n", 
         (get_head_none == RT_GET? "GET": "HEAD"), request_ret.path, 
-        (request_ret.http_version == HTTP_0_9? "HTTP/0.9": (request_ret.http_version == HTTP_1_0? "HTTP/1.0":"HTTP/1.1")), 
-        headers.host, headers.user_agent, headers.accept, headers.accept_language, headers.accept_encoding, headers.connection, headers.referer);
+        (request_ret.http_version == HTTP_0_9? "HTTP/0.9": (request_ret.http_version == HTTP_1_0? "HTTP/1.0":(request_ret.http_version == HTTP_none? "none":"HTTP/1.1"))), 
+        request_ret.headers.host, request_ret.headers.user_agent, request_ret.headers.accept, request_ret.headers.accept_language, 
+        request_ret.headers.accept_encoding, request_ret.headers.connection, request_ret.headers.referer);
     
-    _free_headers(&headers);
     return request_ret;
 }
 

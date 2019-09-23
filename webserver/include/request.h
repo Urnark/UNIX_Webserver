@@ -26,7 +26,8 @@ typedef struct headers_t
 typedef enum http_version_t {
     HTTP_0_9,
     HTTP_1_0,
-    HTTP_1_1
+    HTTP_1_1,
+    HTTP_none
 } HTTP_version;
 
 typedef struct request_t
@@ -35,13 +36,15 @@ typedef struct request_t
     int response_code;
     char path[PATH_MAX];
     Request_type type;
+    Headers headers;
 } Request_t;
 
 char path_www_folder[PATH_MAX];
 int request_stop_reciving_data;
 
 void _set_path_to_www_folder();
-void _free_headers(Headers* headers);
+void free_headers(Headers* headers);
+void _init_headers(Headers* headers);
 int _set_header(char** header, char* current_line, const char* comp_str);
 Request_type _populate_headers(Headers* headers, char* current_line);
 int _check_method(Request_t* request, Request_type rt, char* first_word);

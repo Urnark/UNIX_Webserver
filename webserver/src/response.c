@@ -1,22 +1,23 @@
 #include "../include/response.h"
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 char* define_content(Request_t* request)
 {
     char * buffer = NULL;
     long length;
-    FILE * f = fopen(request->path, "rd");
+    struct stat sb;
+    stat(request->path, &sb);
+    FILE * f = fopen(request->path, "rb");
  
     if (f)
     {
-        fseek(f, 0, SEEK_END);
-        length = ftell(f);
-        fseek(f, 0, SEEK_SET);
-        buffer = malloc(length);
+        buffer = malloc(sb.st_size + 1);
         if (buffer)
         {
-            fread(buffer, 1, length, f);
+            fread(buffer, 1, sb.st_size, f);
+            buffer[sb.st_size] = '\0';
         }
         fclose(f);
     }

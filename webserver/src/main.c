@@ -25,6 +25,7 @@ void* client_thread(void* args)
 
 	Request_t request = request_recived(client);
 	send_response(&request, client);
+	free_headers(&request.headers);
 
 	char buf[512] = "End Connection!\n";
 	if(send(client->socket, buf, 16, 0) == -1) {
