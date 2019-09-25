@@ -8,6 +8,7 @@
 #include "../include/socket.h"
 #include "../include/request.h"
 #include "../include/response.h"
+#include "../include/logging.h"
 
 #define START_NUM_THREADS 5
 
@@ -20,6 +21,7 @@ void* client_thread(void* args)
 {
 	int thread_id = ((Thread_args*)args)->id;
 	Client* client = &((Thread_args*)args)->client;
+	logging_log("245.124.1.1", "urnark", "sometime", "GET / HTTP/1.0", 200, 123);
 
     printf("%d: Start Connection!\n", ((Thread_args*)args)->id);
 
@@ -65,6 +67,8 @@ int shoudStopRunning(int running)
 
 int main(int argc, char const *argv[])
 {
+	//logging_log_to_file(1);
+
 	// Initilize the server
 	set_ip_type(0);
 	set_port(4444);
