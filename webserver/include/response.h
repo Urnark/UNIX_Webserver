@@ -8,9 +8,22 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
+typedef struct _file
+{
+    char* content;
+    int length;
+} MyFile;
+
+typedef struct _GET_Response
+{
+    char* content;
+    int header_length;
+    int length_body;
+} GET_Response;
+
 char* get_server_time(char* time_string);
-char* define_content(Request_t* request);
-char* write_head(Request_t* request, Client *client);
+MyFile* define_content(Request_t* request);
+GET_Response* write_head(Request_t* request, Client *client);
 int send_response(Request_t* request, Client *client);
 
 #endif

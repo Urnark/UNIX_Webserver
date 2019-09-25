@@ -340,7 +340,6 @@ Request_t request_received(Client* client)
 	    }
         else
         {
-            printf("%s\n", request);
             return _process_request(request);
         }
         

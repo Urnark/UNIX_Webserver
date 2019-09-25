@@ -14,17 +14,21 @@ int thread_manager_new_thread(void*(*func)(void*), void* args)
 	ti->id = _thread_manager_NEW_ID++;
 	array_push_element(&_thread_manager_array, (void*)ti);
 
-	pthread_mutex_unlock(&_thread_manager_thread_mutex);
-
 	//printf("Array size: %zu, capacity: %zu, s: %zu\n", array.size, array.capacity, array.item_size);
 	_thread_manager_Thread_info* thread_i = (_thread_manager_Thread_info*)array_get(&_thread_manager_array, _thread_manager_array.size - 1);
+	int ret = 0;
 	if (args != NULL)
 	{
 		(*(int*)args) = thread_i->id;
-		return pthread_create(&(thread_i->thread), NULL, func, args);
+		ret = pthread_create(&(thread_i->thread), NULL, func, args);
 	}
-	
-	return pthread_create(&(thread_i->thread), NULL, func,(void*) &(thread_i->id));
+	else
+	{
+		ret = pthread_create(&(thread_i->thread), NULL, func,(void*) &(thread_i->id));
+	}
+
+	pthread_mutex_unlock(&_thread_manager_thread_mutex);
+	return ret;
 }
 
 void thread_manager_terminate_threads()
@@ -54,8 +58,8 @@ void thread_manager_exit_thread(void* args)
 	{
 		if (((_thread_manager_Thread_info*)array_get(&_thread_manager_array, i))->id == thread_id)
 		{
+			free(((_thread_manager_Thread_info*)array_get(&_thread_manager_array, i)));
 			array_remove_element(&_thread_manager_array, i);
-			free(((_thread_manager_Thread_info*)array_get(&_thread_manager_array, _thread_manager_array.size)));
 			break;
 		}
 	}

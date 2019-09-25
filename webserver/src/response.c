@@ -9,38 +9,39 @@ char* get_server_time(char* time_string)
     return time_string;
 }
 
-char* define_content(Request_t* request)
+MyFile* define_content(Request_t* request)
 {
-    char * buffer = NULL;
-    long length;
+    MyFile* file = malloc(sizeof(MyFile));
     struct stat sb;
     stat(request->path, &sb);
     FILE * f = fopen(request->path, "rb");
  
     if (f)
     {
-        buffer = malloc(sb.st_size + 1);
-        if (buffer)
+        file->content = malloc(sb.st_size + 1);
+        if (file->content)
         {
-            fread(buffer, 1, sb.st_size, f);
-            buffer[sb.st_size] = '\0';
+            fread(file->content, 1, sb.st_size, f);
+            file->content[sb.st_size] = '\0';
         }
         fclose(f);
     }
-    printf("filebuffer: %s\n", buffer);
-    return buffer;
+    file->length = sb.st_size;
+    printf("New: %d, Old: %d\n", file->length, strlen(file->content));
+    //printf("filebuffer: %s\n", buffer);
+    return file;
 }
 
-char* write_head(Request_t* request, Client *client)
+GET_Response* write_head(Request_t* request, Client *client)
 {
-    char* head = malloc(1024);
+    GET_Response* ret = malloc(sizeof(GET_Response));
+    ret->content = malloc(4024);
 
     char* server_date = get_server_time(server_date);
     char* servername = read_config_file("SERVER_NAME=");
     char* content_type;
-    char* content = malloc(1024);
+    MyFile* file = NULL;
     char code_notice[22];
-    int content_length;
 
     socklen_t addr_size = sizeof(client->client_address);
     //int clientip = getpeername(client->socket, (struct sockaddr *)&client->client_address, &addr_size);
@@ -68,8 +69,7 @@ char* write_head(Request_t* request, Client *client)
         {
             case 200:
                 strcpy(code_notice, "OK");
-                content = define_content(request);
-                content_length = strlen(content);
+                file = define_content(request);
                 break;
             case 400:
                 strcpy(code_notice, "Bad Request");
@@ -87,9 +87,14 @@ char* write_head(Request_t* request, Client *client)
                 strcpy(code_notice, "Not Implemented");
                 break;
         }
-        sprintf(head, "HTTP/1.1 %d %s\nDate: %s\nServer: %s\nConnection: %s\nContent-Type: %s\nContent-Length: %d\nClient-Peer: %d\n\n %s\n",
-            request->response_code, code_notice, server_date, servername, request->headers.connection, content_type, content_length, clientip, content);
-            
+        sprintf(ret->content, "HTTP/1.1 %d %s\nDate: %s\nServer: %s\nConnection: %s\nContent-Type: %s\nContent-Length: %d\nClient-Peer: %d\n\n",
+            request->response_code, code_notice, server_date, servername, request->headers.connection, content_type, file->length, clientip);
+        
+        ret->header_length = strlen(ret->content);
+        ret->content = realloc(ret->content, ret->header_length + file->length);
+
+        memcpy(ret->content + strlen(ret->content) - 2, file->content, file->length);
+        ret->length_body = file->length;
     }
     else
     {
@@ -116,16 +121,16 @@ char* write_head(Request_t* request, Client *client)
                 strcpy(code_notice, "Not Implemented");
                 break;
         }
-        sprintf(head, "HTTP/1.1 %d %s\nDate: %s\nServer: %s\nConnection: %s\nContent-Type: %s\nContent-Length: %d\nClient-Peer: %d\n\n",
-            request->response_code, code_notice, server_date, servername, request->headers.connection, content_type, content_length, clientip);
-            
+        sprintf(ret->content, "HTTP/1.1 %d %s\nDate: %s\nServer: %s\nConnection: %s\nContent-Type: %s\nContent-Length: %d\nClient-Peer: %d\n\n",
+            request->response_code, code_notice, server_date, servername, request->headers.connection, content_type, file->length, clientip);
+        ret->header_length = strlen(ret->content);
+        ret->length_body = 0;
     }
 
-    return head;
-
     free(server_date);
-    free(head);
-    free(content);
+    free(file->content);
+    free(file);
+    return ret;
 }
 
 int send_response(Request_t* request, Client *client)
@@ -133,23 +138,26 @@ int send_response(Request_t* request, Client *client)
     if(request->http_version == HTTP_1_0 || request->http_version == HTTP_1_1 || request->http_version == HTTP_none)
     {
         printf("Response\n");
-        char* response = write_head(request, client);
-        size_t size = strlen(response);
-        if (send(client->socket, response, size, 0) == -1)
+        GET_Response* response = write_head(request, client);
+        if (send(client->socket, response, response->header_length + response->length_body, 0) == -1)
         {
             fprintf(stderr, "ERROR: Can not send response to the client.\n");
         }
         printf("%s\n", response);
+        free(response->content);
+        free(response);
     }
     else if(request->http_version == HTTP_0_9)
     {
-        char* content = define_content(request); 
-        size_t size = strlen(content);
-        if (send(client->socket, content, size, 0) == -1)
+        MyFile* file = define_content(request); 
+        size_t size = strlen(file->content);
+        if (send(client->socket, file->content, file->length, 0) == -1)
         {
             fprintf(stderr, "ERROR: Can not send response to the client.\n");
         }
-        printf("%s\n", content);
+        printf("%s\n", file->content);
+        free(file->content);
+        free(file);
     }
 
 }
