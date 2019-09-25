@@ -46,7 +46,7 @@ char* write_head(Request_t* request, Client *client)
     //int clientip = getpeername(client->socket, (struct sockaddr *)&client->client_address, &addr_size);
     int clientip = inet_ntoa(AF_INET, &(client->client_address.sin_addr), client->client_address, addr_size);
 
-    if(RT_GET)
+    if(request->type == RT_GET)
     {
         char *ext = strrchr(request->path, '.');
         ext = ext + 1;
@@ -130,7 +130,7 @@ char* write_head(Request_t* request, Client *client)
 
 int send_response(Request_t* request, Client *client)
 {
-    if(HTTP_1_0 || HTTP_1_1 || HTTP_none)
+    if(request->http_version == HTTP_1_0 || request->http_version == HTTP_1_1 || request->http_version == HTTP_none)
     {
         printf("Response\n");
         char* response = write_head(request, client);
@@ -141,7 +141,7 @@ int send_response(Request_t* request, Client *client)
         }
         printf("%s\n", response);
     }
-    else if(HTTP_0_9)
+    else if(request->http_version == HTTP_0_9)
     {
         char* content = define_content(request); 
         size_t size = strlen(content);
