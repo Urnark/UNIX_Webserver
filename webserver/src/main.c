@@ -26,12 +26,12 @@ void* client_thread(void* args)
 	Request_t request = request_received(client);
 	send_response(&request, client);
 	free_headers(&request.headers);
-
+	/*
 	char buf[512] = "End Connection!\n";
 	if(send(client->socket, buf, 16, 0) == -1) {
 		fprintf(stderr, "ERROR: Can not send 'Hello' to the client.\n");
 	}
-
+	*/
 	//close(client->socket);
 	shutdown(client->socket, SHUT_WR);
 	thread_manager_exit_thread(args);
