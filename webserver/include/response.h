@@ -35,7 +35,7 @@ int response_malloc_head(HTTP_HEAD response_head);
 int response_free_head(HTTP_HEAD respnse_head);
 char* get_server_time(char* time_string);
 MyFile* define_content(Request_t* request);
-int send_response(Client *client, char *content);
+int send_response(Client *client, char *response, int response_size);
 int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, int head_true, int content_true);
 int gather_response_information(Request_t* request, Client *client);
 

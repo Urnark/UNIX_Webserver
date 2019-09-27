@@ -43,17 +43,17 @@ int define_content_size(HTTP_HEAD response_head, Request_t* request)
         return size;
 }
 
-int send_response(Client *client, char *content)
+int send_response(Client *client, char *response, int response_size)
 {
-    int content_size=strlen(content);
+    //int content_size = strlen(content);
     //printf("content_size: %d\n", content_size);
-    if (send(client->socket, content, content_size, 0) == -1)
+    if (send(client->socket, response, response_size, 0) == -1)
         {
             fprintf(stderr, "ERROR: Can not send response to the client.\n");
         }
     //printf("%s\n", content);
 
-    free(content);
+    free(response);
 }
 
 int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, int head_true, int content_true)
@@ -78,9 +78,18 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
             response_head.connection_type,
             response_head.client_ip);
 
-            memcpy(content,file->file_content,file->length);
+        int headers_size = strlen(content);
+        memcpy(content + headers_size,file->file_content,file->length);
+        if (strcmp(response_head.content_type, "text/html") == 0 ||
+            strcmp(response_head.content_type, "text/css") == 0)
+        {
+            content[headers_size + file->length-1]='\0';
+        }
+        send_response(client, content, headers_size + file->length);
 
-            send_response(client, content);
+        free(file->file_content);
+        free(file);
+        free(response_head.server_time);
     }
     else if (head_true == 0 && content_true == 1)
     {
@@ -100,7 +109,10 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
             response_head.connection_type,
             response_head.client_ip);
 
-            send_response(client, content);
+        int headers_size = strlen(content);
+        send_response(client, content, headers_size);
+
+        free(response_head.server_time);
     }
     else if (head_true == 1 && content_true == 0)
     {
@@ -109,7 +121,10 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
         char *content = malloc(response_head.content_size);
         MyFile* file = define_content(request);
         memcpy(content,file->file_content,file->length);
-        send_response(client, content);
+        send_response(client, content, response_head.content_size);
+
+        free(file->file_content);
+        free(file);
     }
 }
 

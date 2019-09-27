@@ -196,6 +196,8 @@ int _check_uri(Request_t* request, char* method)
         return 1;
     }
 
+    printf("%s\n", uri);
+
     // Check uri
     char path[PATH_MAX];
     char *real_uri = realpath(uri, path);
