@@ -4,26 +4,39 @@
 #include <stdio.h>
 #include "socket.h"
 #include "request.h"
+#include "read_config.h"
 #include <string.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <arpa/inet.h>
+
+typedef struct _head
+{
+    char *http_version;
+    char *code;
+    char *code_notice;
+    char *server_time;
+    char *name;
+    char *server_version;
+    char *content_type;
+    int content_size;
+    char *connection_type;
+    char *client_ip;
+}HTTP_HEAD;
 
 typedef struct _file
 {
-    char* content;
+    char* file_content;
     int length;
 } MyFile;
 
-typedef struct _GET_Response
-{
-    char* content;
-    int header_length;
-    int length_body;
-} GET_Response;
 
+int response_malloc_head(HTTP_HEAD response_head);
+int response_free_head(HTTP_HEAD respnse_head);
 char* get_server_time(char* time_string);
 MyFile* define_content(Request_t* request);
-GET_Response* write_head(Request_t* request, Client *client);
-int send_response(Request_t* request, Client *client);
+int send_response(Client *client, char *content);
+int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, int head_true, int content_true);
+int gather_response_information(Request_t* request, Client *client);
 
 #endif

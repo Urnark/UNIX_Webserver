@@ -18,146 +18,174 @@ MyFile* define_content(Request_t* request)
  
     if (f)
     {
-        file->content = malloc(sb.st_size + 1);
-        if (file->content)
+        file->file_content = malloc(sb.st_size + 1);
+        if (file->file_content)
         {
-            fread(file->content, 1, sb.st_size, f);
-            file->content[sb.st_size] = '\0';
+            fread(file->file_content, 1, sb.st_size, f);
+            file->file_content[sb.st_size] = '\0';
         }
         fclose(f);
     }
     file->length = sb.st_size;
-    printf("New: %d, Old: %d\n", file->length, strlen(file->content));
+    //printf("New: %d, Old: %ld\n", file->length, strlen(file->file_content));
     //printf("filebuffer: %s\n", buffer);
     return file;
 }
 
-GET_Response* write_head(Request_t* request, Client *client)
+int define_content_size(HTTP_HEAD response_head, Request_t* request)
 {
-    GET_Response* ret = malloc(sizeof(GET_Response));
-    ret->content = malloc(4024);
-
-    char* server_date = get_server_time(server_date);
-    char* servername = read_config_file("SERVER_NAME=");
-    char* content_type;
-    MyFile* file = NULL;
-    char code_notice[22];
-
-    socklen_t addr_size = sizeof(client->client_address);
-    //int clientip = getpeername(client->socket, (struct sockaddr *)&client->client_address, &addr_size);
-    int clientip = inet_ntoa(AF_INET, &(client->client_address.sin_addr), client->client_address, addr_size);
-
-    if(request->type == RT_GET)
-    {
-        char *ext = strrchr(request->path, '.');
-        ext = ext + 1;
-    
-        if(strcmp(ext,"css") == 0)
-        {
-            content_type = "text/css";
-        }
-        else if(strcmp(ext,"png") == 0)
-        {
-            content_type = "image/png";
-        }
-        else
-        {
-	        content_type = "text/html";
-	    }
-
-        switch (request->response_code)
-        {
-            case 200:
-                strcpy(code_notice, "OK");
-                file = define_content(request);
-                break;
-            case 400:
-                strcpy(code_notice, "Bad Request");
-                break;
-            case 403:
-                strcpy(code_notice, "Forbidden");
-                break;
-            case 404:
-                strcpy(code_notice, "Not Found");
-                break;
-            case 500:
-                strcpy(code_notice, "Internal Server Error");
-                break;
-            case 501:
-                strcpy(code_notice, "Not Implemented");
-                break;
-        }
-        sprintf(ret->content, "HTTP/1.1 %d %s\nDate: %s\nServer: %s\nConnection: %s\nContent-Type: %s\nContent-Length: %d\nClient-Peer: %d\n\n",
-            request->response_code, code_notice, server_date, servername, request->headers.connection, content_type, file->length, clientip);
-        
-        ret->header_length = strlen(ret->content);
-        ret->content = realloc(ret->content, ret->header_length + file->length);
-
-        memcpy(ret->content + strlen(ret->content) - 2, file->content, file->length);
-        ret->length_body = file->length;
-    }
-    else
-    {
-        content_type = "text/html";
-
-        switch (request->response_code)
-        {
-            case 200:
-                strcpy(code_notice, "OK");
-                break;
-            case 400:
-                strcpy(code_notice, "Bad Request");
-                break;
-            case 403:
-                strcpy(code_notice, "Forbidden");
-                break;
-            case 404:
-                strcpy(code_notice, "Not Found");
-                break;
-            case 500:
-                strcpy(code_notice, "Internal Server Error");
-                break;
-            case 501:
-                strcpy(code_notice, "Not Implemented");
-                break;
-        }
-        sprintf(ret->content, "HTTP/1.1 %d %s\nDate: %s\nServer: %s\nConnection: %s\nContent-Type: %s\nContent-Length: %d\nClient-Peer: %d\n\n",
-            request->response_code, code_notice, server_date, servername, request->headers.connection, content_type, file->length, clientip);
-        ret->header_length = strlen(ret->content);
-        ret->length_body = 0;
-    }
-
-    free(server_date);
-    free(file->content);
-    free(file);
-    return ret;
+        int size;
+        FILE * f = fopen(request->path, "rb");
+        int pointer = ftell(f);
+        fseek(f, 0L, SEEK_END);
+        size = ftell(f);
+        fseek(f, pointer, SEEK_SET);
+        return size;
 }
 
-int send_response(Request_t* request, Client *client)
+int send_response(Client *client, char *content)
 {
-    if(request->http_version == HTTP_1_0 || request->http_version == HTTP_1_1 || request->http_version == HTTP_none)
-    {
-        printf("Response\n");
-        GET_Response* response = write_head(request, client);
-        if (send(client->socket, response, response->header_length + response->length_body, 0) == -1)
+    int content_size=strlen(content);
+    //printf("content_size: %d\n", content_size);
+    if (send(client->socket, content, content_size, 0) == -1)
         {
             fprintf(stderr, "ERROR: Can not send response to the client.\n");
         }
-        printf("%s\n", response);
-        free(response->content);
-        free(response);
-    }
-    else if(request->http_version == HTTP_0_9)
-    {
-        MyFile* file = define_content(request); 
-        size_t size = strlen(file->content);
-        if (send(client->socket, file->content, file->length, 0) == -1)
-        {
-            fprintf(stderr, "ERROR: Can not send response to the client.\n");
-        }
-        printf("%s\n", file->content);
-        free(file->content);
-        free(file);
-    }
+    //printf("%s\n", content);
 
+    free(content);
+}
+
+int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, int head_true, int content_true)
+{
+    if(head_true == 0 && content_true == 0)
+    {
+        response_head.content_size = define_content_size(response_head ,request);
+        MyFile* file = define_content(request);
+
+        char *content = malloc(response_head.content_size + 256);
+        //printf("size: %d\n", response_head.content_size);
+        //printf("size: %d\n", response_head.content_size+256);
+        sprintf(content, "%s %s %s\nDate: %s\nServer: %s\nServer_version: %s\nContent-Type: %s\nContent-Length: %d\nConnection: %s\nClient-Peer: %s\n\n",
+            response_head.http_version,
+            response_head.code,
+            response_head.code_notice,
+            response_head.server_time,
+            response_head.name,
+            response_head.server_version,
+            response_head.content_type,
+            response_head.content_size,
+            response_head.connection_type,
+            response_head.client_ip);
+
+            memcpy(content,file->file_content,file->length);
+
+            send_response(client, content);
+    }
+    else if (head_true == 0 && content_true == 1)
+    {
+        response_head.content_size = 0;
+
+        char *content = malloc(response_head.content_size + 256);
+
+        sprintf(content, "%s %s %s\nDate: %s\nServer: %s\nServer_version: %s\nContent-Type: %s\nContent-Length: %d\nConnection: %s\nClient-Peer: %s\n\n",
+            response_head.http_version,
+            response_head.code,
+            response_head.code_notice,
+            response_head.server_time,
+            response_head.name,
+            response_head.server_version,
+            response_head.content_type,
+            response_head.content_size,
+            response_head.connection_type,
+            response_head.client_ip);
+
+            send_response(client, content);
+    }
+    else if (head_true == 1 && content_true == 0)
+    {
+        response_head.content_size = define_content_size(response_head, request);
+
+        char *content = malloc(response_head.content_size);
+        MyFile* file = define_content(request);
+        memcpy(content,file->file_content,file->length);
+        send_response(client, content);
+    }
+}
+
+int gather_response_information(Request_t* request, Client *client)
+{
+    HTTP_HEAD response_head;
+
+    if(request->http_version == HTTP_0_9)
+    {
+        build_response(response_head, request, client, 1, 0);
+    }
+    else if(request->http_version == HTTP_1_0 || request->http_version == HTTP_1_1 || request->http_version == HTTP_none)
+    {
+        if(request->http_version == HTTP_1_0){
+            response_head.http_version = "HTTP/1.0";
+        }else{
+            response_head.http_version = "HTTP/1.1";
+        }
+        response_head.server_time = get_server_time(response_head.server_time);
+        response_head.name = read_config_file("SERVER_NAME=");
+        response_head.server_version = read_config_file("SERVER_VERSION=");
+        socklen_t addr_size = sizeof(client->client_address);
+        response_head.client_ip = inet_ntoa(client->client_address.sin_addr);
+        response_head.content_type = "text/html";
+        response_head.connection_type=request->headers.connection;
+
+        switch (request->response_code)
+                {
+                    case 200:
+                        response_head.code="200";
+                        response_head.code_notice="OK";
+                        if(request->type == RT_GET)
+                        {
+                            char *ext = strrchr(request->path, '.');
+                            ext = ext + 1;
+                        
+                            if(strcmp(ext,"css") == 0)
+                            {
+                                response_head.content_type="text/css";
+                            }
+                            else if(strcmp(ext,"png") == 0)
+                            {
+                                response_head.content_type="image/png";
+                            }
+                            
+                            build_response(response_head, request, client, 0, 0);
+
+                        }else{
+                            build_response(response_head, request, client, 0, 1);
+                        }
+                        break;
+                    case 400:
+                        response_head.code="400";
+                        response_head.code_notice="Bad Request";
+                        build_response(response_head, request, client, 0, 1);
+                        break;
+                    case 403:
+                        response_head.code="403";
+                        response_head.code_notice="Forbidden";
+                        build_response(response_head, request, client, 0, 1);
+                        break;
+                    case 404:
+                        response_head.code="404";
+                        response_head.code_notice="Not Found";
+                        build_response(response_head, request, client, 0, 1);
+                        break;
+                    case 500:
+                        response_head.code="500";
+                        response_head.code_notice="Internal Server Error";
+                        build_response(response_head, request, client, 0, 1);
+                        break;
+                    case 501:
+                        response_head.code="501";
+                        response_head.code_notice="Not Implemented";
+                        build_response(response_head, request, client, 0, 1);
+                        break;
+                }
+    }
 }
