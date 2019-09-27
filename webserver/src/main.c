@@ -26,7 +26,7 @@ void* client_thread(void* args)
     printf("%d: Start Connection!\n", ((Thread_args*)args)->id);
 
 	Request_t request = request_received(client);
-	send_response(&request, client);
+	gather_response_information(&request, client);
 	free_headers(&request.headers);
 	
 	/*char buf[512] = "End Connection!\n";
