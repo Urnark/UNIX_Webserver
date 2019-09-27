@@ -27,8 +27,8 @@ MyFile* define_content(Request_t* request)
         fclose(f);
     }
     file->length = sb.st_size;
-    printf("New: %d, Old: %ld\n", file->length, strlen(file->file_content));
-    printf("filebuffer: %s\n", buffer);
+    //printf("New: %d, Old: %ld\n", file->length, strlen(file->file_content));
+    //printf("filebuffer: %s\n", file->file_content);
     return file;
 }
 
@@ -51,7 +51,7 @@ int send_response(Client *client, char *response, int response_size)
         {
             fprintf(stderr, "ERROR: Can not send response to the client.\n");
         }
-    printf("%s\n", content);
+    //printf("%s\n", content);
 
     free(response);
 }
