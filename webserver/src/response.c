@@ -27,8 +27,8 @@ MyFile* define_content(Request_t* request)
         fclose(f);
     }
     file->length = sb.st_size;
-    //printf("New: %d, Old: %ld\n", file->length, strlen(file->file_content));
-    //printf("filebuffer: %s\n", buffer);
+    printf("New: %d, Old: %ld\n", file->length, strlen(file->file_content));
+    printf("filebuffer: %s\n", buffer);
     return file;
 }
 
@@ -46,12 +46,12 @@ int define_content_size(HTTP_HEAD response_head, Request_t* request)
 int send_response(Client *client, char *content)
 {
     int content_size=strlen(content);
-    //printf("content_size: %d\n", content_size);
+    printf("content_size: %d\n", content_size);
     if (send(client->socket, content, content_size, 0) == -1)
         {
             fprintf(stderr, "ERROR: Can not send response to the client.\n");
         }
-    //printf("%s\n", content);
+    printf("%s\n", content);
 
     free(content);
 }
@@ -64,8 +64,8 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
         MyFile* file = define_content(request);
 
         char *content = malloc(response_head.content_size + 256);
-        //printf("size: %d\n", response_head.content_size);
-        //printf("size: %d\n", response_head.content_size+256);
+        printf("size: %d\n", response_head.content_size);
+        printf("size: %d\n", response_head.content_size+256);
         sprintf(content, "%s %s %s\nDate: %s\nServer: %s\nServer_version: %s\nContent-Type: %s\nContent-Length: %d\nConnection: %s\nClient-Peer: %s\n\n",
             response_head.http_version,
             response_head.code,
