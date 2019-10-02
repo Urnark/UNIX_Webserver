@@ -173,7 +173,11 @@ int gather_response_information(Request_t* request, Client *client)
         socklen_t addr_size = sizeof(client->client_address);
         response_head.client_ip = inet_ntoa(client->client_address.sin_addr);
         response_head.content_type = "text/html";
-        response_head.connection_type=request->headers.connection;
+        if(request->headers.connection != NULL){
+            response_head.connection_type=request->headers.connection;
+        }else{
+            response_head.connection_type="closed";
+        }
 
         switch (request->response_code)
                 {
