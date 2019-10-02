@@ -9,6 +9,6 @@ typedef struct _config_data
 } ServerConfig;
 
 
-int read_config_file(char* data, ServerConfig sc);
+void read_config_file(char* data, ServerConfig* sc);
 
 #endif

@@ -7,7 +7,6 @@
 #include "read_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <arpa/inet.h>
 
 typedef struct _head

@@ -1,4 +1,5 @@
 #include "../include/response.h"
+#include <math.h>
 
 char* get_server_time(char* time_string)
 {
@@ -9,30 +10,7 @@ char* get_server_time(char* time_string)
     return time_string;
 }
 
-MyFile* define_content(Request_t* request)
-{
-    MyFile* file = malloc(sizeof(MyFile));
-    struct stat sb;
-    stat(request->path, &sb);
-    FILE * f = fopen(request->path, "rb");
- 
-    if (f)
-    {
-        file->file_content = malloc(sb.st_size + 1);
-        if (file->file_content)
-        {
-            fread(file->file_content, 1, sb.st_size, f);
-            file->file_content[sb.st_size] = '\0';
-        }
-        fclose(f);
-    }
-    file->length = sb.st_size;
-    //printf("New: %d, Old: %ld\n", file->length, strlen(file->file_content));
-    //printf("filebuffer: %s\n", file->file_content);
-    return file;
-}
-
-int define_content_size(HTTP_HEAD response_head, Request_t* request)
+int define_content_size(Request_t* request)
 {
         int size;
         FILE * f = fopen(request->path, "rb");
@@ -43,15 +21,31 @@ int define_content_size(HTTP_HEAD response_head, Request_t* request)
         return size;
 }
 
+MyFile* define_content(Request_t* request)
+{
+    MyFile* file = malloc(sizeof(MyFile));
+    FILE * f = fopen(request->path, "rb");
+ 
+    if (f)
+    {
+        file->length = define_content_size(request);
+        file->file_content = malloc(file->length + 1);
+        if (file->file_content)
+        {
+            fread(file->file_content, 1, file->length, f);
+            file->file_content[file->length] = '\0';
+        }
+        fclose(f);
+    }
+    return file;
+}
+
 int send_response(Client *client, char *response, int response_size)
 {
-    //int content_size = strlen(content);
-    //printf("content_size: %d\n", content_size);
     if (send(client->socket, response, response_size, 0) == -1)
         {
             fprintf(stderr, "ERROR: Can not send response to the client.\n");
         }
-    //printf("%s\n", content);
 
     free(response);
 }
@@ -60,12 +54,21 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
 {
     if(head_true == 0 && content_true == 0)
     {
-        response_head.content_size = define_content_size(response_head ,request);
+        response_head.content_size = define_content_size(request);
         MyFile* file = define_content(request);
-
-        char *content = malloc(response_head.content_size + 256);
-        printf("size: %d\n", response_head.content_size);
-        printf("size: %d\n", response_head.content_size+256);
+        
+        int header_length = strlen(response_head.http_version) + 
+                            strlen(response_head.code) +
+                            strlen(response_head.code_notice) +
+                            strlen(response_head.server_time) +
+                            strlen(response_head.name) +
+                            strlen(response_head.server_version) +
+                            strlen(response_head.content_type) +
+                            (response_head.content_size == 0 ? 1 : (int)(log10f((float)(response_head.content_size))+1)) +
+                            strlen(response_head.connection_type) +
+                            strlen(response_head.client_ip) +
+                            107;
+        char *content = malloc(response_head.content_size + header_length);
         sprintf(content, "%s %s %s\nDate: %s\nServer: %s\nServer_version: %s\nContent-Type: %s\nContent-Length: %d\nConnection: %s\nClient-Peer: %s\n\n",
             response_head.http_version,
             response_head.code,
@@ -83,7 +86,7 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
         if (strcmp(response_head.content_type, "text/html") == 0 ||
             strcmp(response_head.content_type, "text/css") == 0)
         {
-            content[headers_size + file->length-1]='\0';
+            content[headers_size + file->length]='\0';
         }
         send_response(client, content, headers_size + file->length);
 
@@ -95,7 +98,18 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
     {
         response_head.content_size = 0;
 
-        char *content = malloc(response_head.content_size + 256);
+        int header_length = strlen(response_head.http_version) + 
+                            strlen(response_head.code) +
+                            strlen(response_head.code_notice) +
+                            strlen(response_head.server_time) +
+                            strlen(response_head.name) +
+                            strlen(response_head.server_version) +
+                            strlen(response_head.content_type) +
+                            1 +
+                            strlen(response_head.connection_type) +
+                            strlen(response_head.client_ip) +
+                            107;
+        char *content = malloc(response_head.content_size + header_length);
 
         sprintf(content, "%s %s %s\nDate: %s\nServer: %s\nServer_version: %s\nContent-Type: %s\nContent-Length: %d\nConnection: %s\nClient-Peer: %s\n\n",
             response_head.http_version,
@@ -116,7 +130,7 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
     }
     else if (head_true == 1 && content_true == 0)
     {
-        response_head.content_size = define_content_size(response_head, request);
+        response_head.content_size = define_content_size(request);
 
         char *content = malloc(response_head.content_size);
         MyFile* file = define_content(request);
@@ -144,18 +158,17 @@ int gather_response_information(Request_t* request, Client *client)
             response_head.http_version = "HTTP/1.1";
         }
         response_head.server_time = get_server_time(response_head.server_time);
-        //response_head.name = read_config_file("SERVER_NAME=");
         
         ServerConfig sc;
-        read_config_file("SERVER_NAME=", sc);
+        read_config_file("SERVER_NAME=", &sc);
+        response_head.name = malloc(strlen(sc.config_data) + 1);
         strcpy(response_head.name,sc.config_data);
-        printf("head: %s",response_head.name);
-        
-        //response_head.server_version = read_config_file("SERVER_VERSION=");
+        free(sc.config_data);
 
-        read_config_file("SERVER_VERSION=", sc);
+        read_config_file("SERVER_VERSION=", &sc);
+        response_head.server_version = malloc(strlen(sc.config_data) + 1);
         strcpy(response_head.server_version,sc.config_data);
-        printf("version: %s",response_head.server_version);
+        free(sc.config_data);
 
         socklen_t addr_size = sizeof(client->client_address);
         response_head.client_ip = inet_ntoa(client->client_address.sin_addr);
@@ -213,5 +226,8 @@ int gather_response_information(Request_t* request, Client *client)
                         build_response(response_head, request, client, 0, 1);
                         break;
                 }
+        
+        free(response_head.name);
+        free(response_head.server_version);
     }
 }
