@@ -1,9 +1,10 @@
 #include "../include/read_config.h"
 
-char* read_config_file(char* data)
+int read_config_file(char* data, ServerConfig sc)
 {
-    char* buffer = NULL;
-    FILE* f = fopen("server.lab2-config" , "r");
+	static const char filename[]="lab2-config";
+    char buffer[256];
+    FILE* f = fopen(filename , "r");
 
     if(f)
     {
@@ -11,12 +12,9 @@ char* read_config_file(char* data)
         char *ptr = strstr(buffer, data);
         if (ptr != NULL)
         {
-            printf("buffer %s", buffer);
-            buffer = buffer + strlen(data);
-            printf("buffer %s", buffer);
+            sc.config_data = buffer + strlen(data);
+	        printf("buffer %s", sc.config_data);
         }
+
     }
-
-    return buffer;
-
 }

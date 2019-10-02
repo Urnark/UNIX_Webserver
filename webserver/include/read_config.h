@@ -3,6 +3,12 @@
 #include <stdio.h>
 #include <string.h>
 
-char* read_config_file(char* data);
+typedef struct _config_data
+{
+    char* config_data;
+} ServerConfig;
+
+
+int read_config_file(char* data, ServerConfig sc);
 
 #endif

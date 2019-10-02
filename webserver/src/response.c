@@ -144,8 +144,19 @@ int gather_response_information(Request_t* request, Client *client)
             response_head.http_version = "HTTP/1.1";
         }
         response_head.server_time = get_server_time(response_head.server_time);
-        response_head.name = read_config_file("SERVER_NAME=");
-        response_head.server_version = read_config_file("SERVER_VERSION=");
+        //response_head.name = read_config_file("SERVER_NAME=");
+        
+        ServerConfig sc;
+        read_config_file("SERVER_NAME=", sc);
+        strcpy(response_head.name,sc.config_data);
+        printf("head: %s",response_head.name);
+        
+        //response_head.server_version = read_config_file("SERVER_VERSION=");
+
+        read_config_file("SERVER_VERSION=", sc);
+        strcpy(response_head.server_version,sc.config_data);
+        printf("version: %s",response_head.server_version);
+
         socklen_t addr_size = sizeof(client->client_address);
         response_head.client_ip = inet_ntoa(client->client_address.sin_addr);
         response_head.content_type = "text/html";
