@@ -242,3 +242,19 @@
 245.124.1.1 - urnark sometime "GET / HTTP/1.0" 200 123
 245.124.1.1 - urnark sometime "GET / HTTP/1.0" 200 123
 245.124.1.1 - urnark sometime "GET / HTTP/1.0" 200 123
+245.124.1.1 - urnark sometime "GET / HTTP/1.0" 200 123
+245.124.1.1 - urnark sometime "GET / HTTP/1.0" 200 123
+245.124.1.1 - urnark sometime "GET / HTTP/1.0" 200 123
+245.124.1.1 - urnark sometime "GET / HTTP/1.0" 200 123
+245.124.1.1 - urnark sometime "GET / HTTP/1.0" 200 123
+245.124.1.1 - urnark sometime "GET / HTTP/1.0" 200 123
+192.168.10.189 - - Thu, 03 Oct 2019 12:58:35 GMT "GET / HTTP/1.1" 200 846
+192.168.10.189 - - Thu, 03 Oct 2019 12:58:35 GMT "GET /style.css HTTP/1.1" 200 680
+192.168.10.189 - - Thu, 03 Oct 2019 12:58:35 GMT "GET /images/diamond_7.png HTTP/1.1" 200 33702
+192.168.10.189 - - Thu, 03 Oct 2019 12:58:35 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
+192.168.10.189 - - Thu, 03 Oct 2019 12:58:35 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
+192.168.10.189 - - Thu, 03 Oct 2019 12:59:49 GMT "GET / HTTP/1.1" 200 846
+192.168.10.189 - - Thu, 03 Oct 2019 12:59:49 GMT "GET /style.css HTTP/1.1" 200 680
+192.168.10.189 - - Thu, 03 Oct 2019 12:59:49 GMT "GET /images/diamond_7.png HTTP/1.1" 200 33702
+192.168.10.189 - - Thu, 03 Oct 2019 12:59:49 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
+192.168.10.189 - - Thu, 03 Oct 2019 12:59:50 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
