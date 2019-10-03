@@ -91,7 +91,7 @@ int main(int argc, char const *argv[])
 		}
 	}
 	request_stop_reciving_data = 1;
-
+	
 	thread_manager_terminate_threads();
 	closeServer();
 

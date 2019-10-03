@@ -185,6 +185,13 @@ int _check_uri(Request_t* request, char* method)
         n = strlen(method);
         *p = ' ';
     }
+    // String length check on path
+    if (n >= PATH_MAX)
+    {
+        printf("400 Bad Request, URI faild string length check\n");
+        request->response_code = 400;
+        return 1;
+    }
     strncat(uri, method, n);
     if (request->http_version == HTTP_0_9)
         uri[strlen(uri) - 1] = '\0';
@@ -194,6 +201,13 @@ int _check_uri(Request_t* request, char* method)
         printf("400 Bad Request, missing URI\n");
         request->response_code = 400;
         return 1;
+    }
+
+    // Remove everything after the "?" symbol in the path
+    char* ptr = strchr(uri, '?');
+    if (ptr != NULL)
+    {
+        *ptr = '\0';
     }
 
     printf("%s\n", uri);
