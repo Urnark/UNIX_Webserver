@@ -22,7 +22,7 @@ void* client_thread(void* args)
 	int thread_id = ((Thread_args*)args)->id;
 	Client* client = &((Thread_args*)args)->client;
 
-    printf("%d: Start Connection!\n", ((Thread_args*)args)->id);
+    printf("\n%d: Start Connection!\n", ((Thread_args*)args)->id);
 
 	Request_t request = request_received(client);
 	gather_response_information(&request, client);
@@ -91,7 +91,7 @@ int main(int argc, char const *argv[])
 		}
 	}
 	request_stop_reciving_data = 1;
-	
+
 	thread_manager_terminate_threads();
 	closeServer();
 
