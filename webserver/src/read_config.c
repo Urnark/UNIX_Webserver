@@ -22,4 +22,6 @@ void read_config_file(char* data, ServerConfig* sc)
             }
         }
     }
+
+    fclose(f);
 }
