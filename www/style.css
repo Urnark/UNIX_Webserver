@@ -1,56 +1,102 @@
 body {
-	background-color: lightgrey;	
+	background-color: lightgrey;
+	min-width: 800px;
 }
 
-header{
-	text-align:center;
-	color:darkgrey;
+header {
+	text-align: center;
+	color: darkgrey;
 }
 
-footer{
+footer {
 	border-top-width: 2px;
-    border-top-style: solid;
-    margin-top: 75px;
-	size:70%;
-	color:grey;
+	border-top-style: solid;
+	margin-top: 75px;
+	size: 70%;
+	color: grey;
 }
 
 .card {
-	height:200px;
-	width:140px;
+	height: 200px;
+	width: 140px;
 }
 
-#zerodiv{
-	text-align:center;
-	color:#ED7864;
+#zerodiv {
+	text-align: center;
+	color: #ED7864;
 }
 
-#firstdiv{
-	position:relative;
+#firstdiv {
+	position: relative;
 	z-index: 1;
-  	top: 70px;
-  	left: 40px;
-  	
+	top: 70px;
+	left: 40px;
 }
 
-#seconddiv{
+#seconddiv {
 	margin: 0 auto;
 	width: 300px;
 	position: relative;
-  	z-index: 2;
+	z-index: 2;
 }
 
-#thirddiv{
-	float:left;
+#thirddiv {
+	float: left;
 	position: relative;
-  	z-index: 1;
-  	top: 30px;
-  	left: 10px;
+	z-index: 1;
+	top: 30px;
+	left: 10px;
 }
 
-#fourthdiv{
+#fourthdiv {
 	position: relative;
-  	z-index: 1;
-  	top: -10px;
-  	left: -40px;
+	z-index: 1;
+	top: -10px;
+	left: -40px;
+	float: left;
+}
+
+#fifthdiv {
+	position: relative;
+	z-index: 1;
+	top: -140px;
+	left: 80px;
+	float: left;
+}
+
+.deck {
+	border-style: solid;
+	height: 200px;
+	width: 140px;
+}
+
+.submit-button {
+	position: relative;
+	top: 55px;
+	left: -10px;
+	margin: 5px;
+	margin-left: 65%;
+	background-color: #7f7f7f;
+	padding: 10px 38px;
+	border-radius: 12px;
+}
+
+.submit-button_two {
+	position: relative;
+	top: -140px;
+	margin: 5px;
+	margin-left: 65%;
+	background-color: #7f7f7f;
+	padding: 10px 38px;
+	border-radius: 12px;
+}
+
+.submit-button:hover {
+	background-color: #e7e7e7;
+	color: black;
+}
+
+.submit-button_two:hover {
+	background-color: #e7e7e7;
+	color: black;
 }
