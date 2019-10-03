@@ -1,5 +1,6 @@
 #include "../include/response.h"
 #include <math.h>
+#include "../include/logging.h"
 
 char* get_server_time(char* time_string)
 {
@@ -40,14 +41,22 @@ MyFile* define_content(Request_t* request)
     return file;
 }
 
+void add_log(HTTP_HEAD* response_head, Request_t* request, int size)
+{
+    request->headers.method[strlen(request->headers.method) - 1] = '\0';
+    logging_log(response_head->client_ip, "-", response_head->server_time, request->headers.method, request->response_code, size);
+}
+
 int send_response(Client *client, char *response, int response_size)
 {
     if (send(client->socket, response, response_size, 0) == -1)
-        {
-            fprintf(stderr, "ERROR: Can not send response to the client.\n");
-        }
+    {
+        fprintf(stderr, "ERROR: Can not send response to the client.\n");
+        return 0;
+    }
 
     free(response);
+    return 1;
 }
 
 int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, int head_true, int content_true)
@@ -56,7 +65,9 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
     {
         response_head.content_size = define_content_size(request);
         MyFile* file = define_content(request);
-        
+
+        response_head.server_time = get_server_time(response_head.server_time);
+
         int header_length = strlen(response_head.http_version) + 
                             strlen(response_head.code) +
                             strlen(response_head.code_notice) +
@@ -88,7 +99,11 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
         {
             content[headers_size + file->length]='\0';
         }
-        send_response(client, content, headers_size + file->length);
+
+        if (send_response(client, content, headers_size + file->length))
+        {
+            add_log(&response_head, request, file->length);
+        }
 
         free(file->file_content);
         free(file);
@@ -97,6 +112,8 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
     else if (head_true == 0 && content_true == 1)
     {
         response_head.content_size = 0;
+
+        response_head.server_time = get_server_time(response_head.server_time);
 
         int header_length = strlen(response_head.http_version) + 
                             strlen(response_head.code) +
@@ -124,7 +141,11 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
             response_head.client_ip);
 
         int headers_size = strlen(content);
-        send_response(client, content, headers_size);
+
+        if (send_response(client, content, headers_size))
+        {
+            add_log(&response_head, request, 0);
+        }
 
         free(response_head.server_time);
     }
@@ -132,13 +153,21 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
     {
         response_head.content_size = define_content_size(request);
 
+        // For logging only
+        response_head.server_time = get_server_time(response_head.server_time);
+
         char *content = malloc(response_head.content_size);
         MyFile* file = define_content(request);
         memcpy(content,file->file_content,file->length);
-        send_response(client, content, response_head.content_size);
+
+        if (send_response(client, content, response_head.content_size))
+        {
+            add_log(&response_head, request, file->length);
+        }
 
         free(file->file_content);
         free(file);
+        free(response_head.server_time);
     }
 }
 
@@ -157,7 +186,6 @@ int gather_response_information(Request_t* request, Client *client)
         }else{
             response_head.http_version = "HTTP/1.1";
         }
-        response_head.server_time = get_server_time(response_head.server_time);
         
         ServerConfig sc;
         read_config_file("SERVER_NAME=", &sc);

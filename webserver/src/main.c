@@ -21,7 +21,6 @@ void* client_thread(void* args)
 {
 	int thread_id = ((Thread_args*)args)->id;
 	Client* client = &((Thread_args*)args)->client;
-	logging_log("245.124.1.1", "urnark", "sometime", "GET / HTTP/1.0", 200, 123);
 
     printf("%d: Start Connection!\n", ((Thread_args*)args)->id);
 

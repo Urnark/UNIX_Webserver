@@ -287,6 +287,16 @@ Request_t _process_request(char* request)
         {
             return request_ret;
         }
+        // Do so the method variable holds ex: GET / HTTP/1.0
+        int length = strlen(request_ret.headers.method);
+        char* temp = malloc(length + 1);
+        strcpy(temp, request_ret.headers.method);
+        free(request_ret.headers.method);
+        request_ret.headers.method = malloc(length + strlen(first_word) + 2);
+        strcpy(request_ret.headers.method, first_word);
+        strcat(request_ret.headers.method, " ");
+        strcat(request_ret.headers.method, temp);
+        free(temp);
     }
     else
     {
