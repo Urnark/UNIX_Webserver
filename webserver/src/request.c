@@ -5,42 +5,6 @@
 #include <errno.h>
 #include <sys/time.h>
 
-//  GET /favicon.ico HTTP/1.1
-//  Host: localhost:4444
-//  User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:69.0) Gecko/20100101 Firefox/69.0
-//  Accept: image/webp,*/*
-//  Accept-Language: en-US,en;q=0.5
-//  Accept-Encoding: gzip, deflate
-//  Connection: keep-alive
-
-//  ET /index.html HTTP/1.1
-//  Host: localhost:4444
-//  User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:69.0) Gecko/20100101 Firefox/69.0
-//  Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-//  Accept-Language: en-US,en;q=0.5
-//  Accept-Encoding: gzip, deflate
-//  Connection: keep-alive
-//  Upgrade-Insecure-Requests: 1
-
-
-//  GET /style.css HTTP/1.1
-//  Host: localhost:4444
-//  User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:69.0) Gecko/20100101 Firefox/69.0
-//  Accept: text/css,*/*;q=0.1
-//  Accept-Language: en-US,en;q=0.5
-//  Accept-Encoding: gzip, deflate
-//  Connection: keep-alive
-//  Referer: http://localhost:4444/index.html
-
-//    GET /images/diamond_7.png HTTP/1.1
-//    Host: localhost:4444
-//    User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:69.0) Gecko/20100101 Firefox/69.0
-//    Accept: image/webp,*/*
-//    Accept-Language: en-US,en;q=0.5
-//    Accept-Encoding: gzip, deflate
-//    Connection: keep-alive
-//    Referer: http://localhost:4444/index.html
-
 void _set_path_to_www_folder()
 {
     // Get current working directory
