@@ -258,3 +258,25 @@
 192.168.10.189 - - Thu, 03 Oct 2019 12:59:49 GMT "GET /images/diamond_7.png HTTP/1.1" 200 33702
 192.168.10.189 - - Thu, 03 Oct 2019 12:59:49 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
 192.168.10.189 - - Thu, 03 Oct 2019 12:59:50 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
+192.168.10.189 - - Thu, 03 Oct 2019 13:03:39 GMT "GET / HTTP/1.1" 200 1184
+192.168.10.189 - - Thu, 03 Oct 2019 13:03:39 GMT "GET /style.css HTTP/1.1" 200 1375
+192.168.10.189 - - Thu, 03 Oct 2019 13:03:39 GMT "GET /images/diamond_7.png HTTP/1.1" 200 33702
+192.168.10.189 - - Thu, 03 Oct 2019 13:03:39 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
+192.168.10.189 - - Thu, 03 Oct 2019 13:03:39 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
+192.168.10.189 - - Thu, 03 Oct 2019 13:03:39 GMT "GET /images/deck.png HTTP/1.1" 200 220275
+192.168.10.189 - - Thu, 03 Oct 2019 13:03:55 GMT "/deep_one/new_card_one.html? HTTP/1.1" 404 -
+192.168.10.189 - - Thu, 03 Oct 2019 13:06:49 GMT "/index.html? HTTP/1.1" 404 -
+192.168.10.189 - - Thu, 03 Oct 2019 13:23:28 GMT "GET /index.html HTTP/1.1" 200 1184
+192.168.10.189 - - Thu, 03 Oct 2019 13:23:28 GMT "GET /style.css HTTP/1.1" 200 1375
+192.168.10.189 - - Thu, 03 Oct 2019 13:23:28 GMT "GET /images/diamond_7.png HTTP/1.1" 200 33702
+192.168.10.189 - - Thu, 03 Oct 2019 13:23:28 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
+192.168.10.189 - - Thu, 03 Oct 2019 13:23:28 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
+192.168.10.189 - - Thu, 03 Oct 2019 13:23:28 GMT "GET /images/deck.png HTTP/1.1" 200 220275
+192.168.10.189 - - Thu, 03 Oct 2019 13:23:32 GMT "/deep_one/new_card_one.html? HTTP/1.1" 404 -
+192.168.10.189 - - Thu, 03 Oct 2019 13:26:30 GMT "GET / HTTP/1.1" 200 1184
+192.168.10.189 - - Thu, 03 Oct 2019 13:26:30 GMT "GET /style.css HTTP/1.1" 200 1375
+192.168.10.189 - - Thu, 03 Oct 2019 13:26:30 GMT "GET /images/diamond_7.png HTTP/1.1" 200 33702
+192.168.10.189 - - Thu, 03 Oct 2019 13:26:30 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
+192.168.10.189 - - Thu, 03 Oct 2019 13:26:30 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
+192.168.10.189 - - Thu, 03 Oct 2019 13:26:30 GMT "GET /images/deck.png HTTP/1.1" 200 220275
+192.168.10.189 - - Thu, 03 Oct 2019 13:26:31 GMT "GET /deep_one/new_card_one.html? HTTP/1.1" 404 -

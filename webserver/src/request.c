@@ -235,6 +235,20 @@ int _check_uri(Request_t* request, char* method)
     }
 }
 
+void _add_get_head_on_method(char* first_word, Request_t* request_ret)
+{
+    // Do so the method variable holds ex: GET / HTTP/1.0
+    int length = strlen(request_ret->headers.method);
+    char* temp = malloc(length + 1);
+    strcpy(temp, request_ret->headers.method);
+    free(request_ret->headers.method);
+    request_ret->headers.method = malloc(length + strlen(first_word) + 2);
+    strcpy(request_ret->headers.method, first_word);
+    strcat(request_ret->headers.method, " ");
+    strcat(request_ret->headers.method, temp);
+    free(temp);
+}
+
 Request_t _process_request(char* request)
 {
     Request_t request_ret;
@@ -277,26 +291,20 @@ Request_t _process_request(char* request)
         first_word = request;
         if (_check_method(&request_ret, get_head_none, first_word))
         {
+            _add_get_head_on_method(first_word, &request_ret);
             return request_ret;
         }
         if (_check_http_version(&request_ret, request_ret.headers.method))
         {
+            _add_get_head_on_method(first_word, &request_ret);
             return request_ret;
         }
         if (_check_uri(&request_ret, request_ret.headers.method))
         {
+            _add_get_head_on_method(first_word, &request_ret);
             return request_ret;
         }
-        // Do so the method variable holds ex: GET / HTTP/1.0
-        int length = strlen(request_ret.headers.method);
-        char* temp = malloc(length + 1);
-        strcpy(temp, request_ret.headers.method);
-        free(request_ret.headers.method);
-        request_ret.headers.method = malloc(length + strlen(first_word) + 2);
-        strcpy(request_ret.headers.method, first_word);
-        strcat(request_ret.headers.method, " ");
-        strcat(request_ret.headers.method, temp);
-        free(temp);
+        _add_get_head_on_method(first_word, &request_ret);
     }
     else
     {
