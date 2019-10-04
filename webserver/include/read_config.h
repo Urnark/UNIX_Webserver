@@ -10,5 +10,7 @@ typedef struct _config_data
 
 
 void read_config_file(char* data, ServerConfig* sc);
+int repair_config_file();
+void create_config_file();
 
 #endif

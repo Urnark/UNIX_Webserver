@@ -25,3 +25,35 @@ void read_config_file(char* data, ServerConfig* sc)
 
     fclose(f);
 }
+
+int repair_config_file(){
+    static const char filename[]="lab2-config";
+    int status;
+    status = remove(filename);
+    if (status == 0){
+        create_config_file();
+        printf("Successfully repaired \"lab2-config\" file.\n");
+    }
+    else if (status==1)
+    {
+        create_config_file();
+        printf("Original file not found. New \"lab2-config\" file was created.\n");
+    }
+    return 0;
+}
+
+void create_config_file(){
+    static const char filename[]="lab2-config";
+    FILE* f = fopen(filename , "w");
+
+    if(f){
+        fprintf(f, "SERVER_NAME=Card_Server\n");
+        fprintf(f, "SERVER_VERSION=0.2\n");
+        fprintf(f, "SERVER_PORT=4444\n");
+        fprintf(f, "SERVER_AS_DEAMON=1\n");
+        fprintf(f, "SERVER_LOG=0\n");
+        fprintf(f, "SERVER_SETTING=0\n");
+    }
+
+    fclose(f);
+}
