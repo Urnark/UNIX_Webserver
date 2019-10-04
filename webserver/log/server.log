@@ -521,3 +521,18 @@
 192.168.10.189 - - Thu, 03 Oct 2019 13:45:06 GMT "GET /images/spade_king.png HTTP/1.1" 200 17367
 192.168.10.189 - - Thu, 03 Oct 2019 13:45:06 GMT "GET /images/heart_A.png HTTP/1.1" 200 25444
 192.168.10.189 - - Thu, 03 Oct 2019 13:45:06 GMT "GET /images/deck.png HTTP/1.1" 200 220275
+127.0.0.1 - - Thu, 03 Oct 2019 13:52:24 GMT "GET /Added_new_testing_for_path_length HTTP/1.0" 404 -
+127.0.0.1 - - Thu, 03 Oct 2019 14:01:56 GMT "[Faild String Length Check]" 404 -
+192.168.10.189 - - Thu, 03 Oct 2019 14:02:50 GMT "GET /index.html HTTP/1.1" 200 1184
+192.168.10.189 - - Thu, 03 Oct 2019 14:02:50 GMT "GET /style.css HTTP/1.1" 200 1375
+192.168.10.189 - - Thu, 03 Oct 2019 14:02:50 GMT "GET /images/diamond_7.png HTTP/1.1" 200 33702
+192.168.10.189 - - Thu, 03 Oct 2019 14:02:50 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
+192.168.10.189 - - Thu, 03 Oct 2019 14:02:51 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
+192.168.10.189 - - Thu, 03 Oct 2019 14:02:51 GMT "GET /images/deck.png HTTP/1.1" 200 220275
+127.0.0.1 - - Thu, 03 Oct 2019 14:05:22 GMT "[Request Too long]" 404 -
+192.168.10.189 - - Thu, 03 Oct 2019 14:05:49 GMT "[Request Too long]" 200 1184
+192.168.10.189 - - Thu, 03 Oct 2019 14:05:49 GMT "[Request Too long]" 200 1375
+192.168.10.189 - - Thu, 03 Oct 2019 14:05:49 GMT "[Request Too long]" 200 33702
+192.168.10.189 - - Thu, 03 Oct 2019 14:05:49 GMT "[Request Too long]" 200 47635
+192.168.10.189 - - Thu, 03 Oct 2019 14:05:49 GMT "[Request Too long]" 200 37187
+192.168.10.189 - - Thu, 03 Oct 2019 14:05:49 GMT "[Request Too long]" 200 220275

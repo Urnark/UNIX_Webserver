@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <linux/limits.h>
 
 const char LOGGING_PATH_LOG_FILE[] = "log/server.log";
 const char LOGGING_PATH_LOG_ERR_FILE[] = "log/server.err";
@@ -32,29 +33,42 @@ void _logging_log(int pri, char* ip, char* userid, char* time, char* request, in
     char* size = malloc(length + 1);
     snprintf(size, length + 1, "%d", size_in_bytes);
 
+    char* r = request;
+    int tooLong = 0;
+    if (strlen(r) >= PATH_MAX)
+    {
+        tooLong = 1;
+        r = malloc(20);
+        strcpy(r, "[Request Too long]");
+    }
+
     if (logging_file)
     {
         if (referer == NULL)
             _logging_log_f((pri == LOG_ERR?LOGGING_PATH_LOG_ERR_FILE:LOGGING_PATH_LOG_FILE), ip, (userid != NULL?userid:"-"), 
-                time, request, response_code, (size_in_bytes != 0?size:"-"), NULL, NULL);
+                time, r, response_code, (size_in_bytes != 0?size:"-"), NULL, NULL);
         else
             _logging_log_f((pri == LOG_ERR?LOGGING_PATH_LOG_ERR_FILE:LOGGING_PATH_LOG_FILE), ip, (userid != NULL?userid:"-"), 
-                time, request, response_code, (size_in_bytes != 0?size:"-"), referer, user_agent);
+                time, r, response_code, (size_in_bytes != 0?size:"-"), referer, user_agent);
     }
     else
     {
         openlog("CardServer", LOG_NDELAY, LOG_USER);
         if (referer == NULL)
             syslog(pri, "%s - %s %s \"%s\" %d %s %s %s", ip, (userid != NULL?userid:"-"), 
-                time, request, response_code, (size_in_bytes != 0?size:"-"));
+                time, r, response_code, (size_in_bytes != 0?size:"-"));
         else
             syslog(pri, "%s - %s %s \"%s\" %d %s \"%s\" \"%s\"", ip, (userid != NULL?userid:"-"), 
-                time, request, response_code, (size_in_bytes != 0?size:"-"), referer, user_agent);
+                time, r, response_code, (size_in_bytes != 0?size:"-"), referer, user_agent);
         
         closelog();
     }
 
     free(size);
+    if (tooLong == 1)
+    {
+        free(r);
+    }
 }
 
 void logging_log_clg(char* ip, char* userid, char* time, char* request, int response_code, int size_in_bytes, char* referer, char* user_agent)
@@ -74,5 +88,5 @@ void logging_log(char* ip, char* userid, char* time, char* request, int response
 
 void logging_log_err(char* ip, char* userid, char* time, char* request, int response_code, int size_in_bytes)
 {
-    logging_log_clg(ip, userid, time, request, response_code, size_in_bytes, NULL, NULL);
+    logging_log_err_clg(ip, userid, time, request, response_code, size_in_bytes, NULL, NULL);
 }
