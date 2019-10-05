@@ -1,5 +1,5 @@
-#ifndef THREAD_H
-#define THREAD_H
+#ifndef THREAD_MANAGER_H
+#define THREAD_MANAGER_H
 
 #include <stdio.h>
 #include <stdlib.h>
