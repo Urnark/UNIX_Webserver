@@ -1,8 +1,13 @@
+// Need to be defined for chroot to work
+#define _POSIX_C_SOURCE 199309L
+#define _XOPEN_SOURCE 500
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "../include/threadManager.h"
 #include "../include/socket.h"
@@ -35,6 +40,34 @@ void *client_thread(void *args)
 	thread_manager_exit_thread(args);
 }
 
+void change_chroot()
+{
+	char project_path[PATH_MAX];
+	getcwd(project_path, sizeof(project_path));
+	// Remove the last direcotry
+    int len = strlen(project_path);
+    int index = len - 1;
+    while(project_path[index--] != '/'){}
+    project_path[index + 1] = '\0';
+
+	strcat(project_path, "/www/");
+
+	printf("%s\n", project_path);
+
+	// Open sys/log or file log, and lab2-config before using chroot
+
+	chdir(project_path);
+	if (chroot(project_path) == 0)
+	{
+		if (errno == EPERM)
+		{
+			printf("Error: chroot insufficient privilege.");
+			exit(EXIT_FAILURE);
+		}
+	}
+
+}
+
 int shoudStopRunning(int running)
 {
 	// For checking if the server should be terminated.
@@ -63,6 +96,8 @@ int shoudStopRunning(int running)
 
 void start_server(int port, int log, int deamon, int setting)
 {
+	change_chroot();
+
 	logging_log_to_file(log);
 
 	// Initilize the server
