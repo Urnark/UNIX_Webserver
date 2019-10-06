@@ -21,7 +21,7 @@ else
 endif
 
 # compile time flag to tell gcc where to find header files
-CFLAGS = -I$(INC_DIR) -D DEBUG=$(DEBUG)
+CFLAGS = -I$(INC_DIR) -D MY_DEBUG=$(DEBUG)
 
 # get all source files in the source directory
 SRCS = $(wildcard $(SRC_DIR)/*.c)
