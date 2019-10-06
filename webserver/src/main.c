@@ -319,7 +319,12 @@ int main(int argc, char const *argv[])
 			}
 			else if (strcmp(argv[number_arguments], "-j") == 0)
 			{
-				use_jail = 1;	
+				#if DEBUG
+				use_jail = 0;
+				fprintf(stderr, "ERROR: jail is not to be used if compiled with DEBUG.\n");
+				#else
+				use_jail = 1;
+				#endif // DEBUG
 			}
 			number_arguments++;
 		}
