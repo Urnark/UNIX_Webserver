@@ -22,16 +22,18 @@ typedef struct thread_args
 {
 	int id;
 	Client client;
+	int use_jail;
 } Thread_args;
 
 void *client_thread(void *args)
 {
 	int thread_id = ((Thread_args *)args)->id;
 	Client *client = &((Thread_args *)args)->client;
+	int use_jail = ((Thread_args*)args)->use_jail;
 
 	printf("\n%d: Start Connection!\n", ((Thread_args *)args)->id);
 
-	Request_t request = request_received(client);
+	Request_t request = request_received(client, use_jail);
 	gather_response_information(&request, client);
 	free_headers(&request.headers);
 
@@ -54,18 +56,55 @@ void change_chroot()
 
 	printf("%s\n", project_path);
 
-	// Open sys/log or file log, and lab2-config before using chroot
+	printf("uid=%u euid=%u\n",  (unsigned)getuid(), (unsigned)geteuid());
+ 	// if egid != gid, we restore it as well (later)
+ 	printf("gid=%u egid=%u\n", (unsigned)getgid(), (unsigned)getegid());
+	setuid(geteuid());
+	printf("uid=%u euid=%u\n",  (unsigned)getuid(), (unsigned)geteuid());
+ 	// if egid != gid, we restore it as well (later)
+ 	printf("gid=%u egid=%u\n\n", (unsigned)getgid(), (unsigned)getegid());
+
+	// check that we have the proper creds (need root for chroot)
+   	if ((geteuid() != 0) && (getegid() != 0)) {
+     	fprintf(stderr, "Error: no root privs (suid missing?)\n");
+      	exit(EXIT_FAILURE);
+    }
+
+	printf("uid=%u euid=%u\n",  (unsigned)getuid(), (unsigned)geteuid());
+ 	// if egid != gid, we restore it as well (later)
+ 	printf("gid=%u egid=%u\n", (unsigned)getgid(), (unsigned)getegid());
 
 	chdir(project_path);
-	if (chroot(project_path) == 0)
+	if (chroot(project_path) == -1)
 	{
 		if (errno == EPERM)
 		{
-			printf("Error: chroot insufficient privilege.");
+			fprintf(stderr, "Error: chroot insufficient privilege.\n");
 			exit(EXIT_FAILURE);
 		}
+		fprintf(stderr, "Error: in chroot.\n");
 	}
 
+	gid_t orig_gid;
+ 	uid_t orig_uid;
+	
+	orig_uid = getuid();
+	orig_gid = getgid();
+	setregid(-1, orig_gid);
+	setreuid(-1, orig_uid);
+
+	printf("uid=%u euid=%u\n", (unsigned)getuid(), (unsigned)geteuid());
+	// if egid != gid, we restore it as well
+	printf("gid=%u egid=%u\n", (unsigned)getgid(), (unsigned)getegid());
+
+	if ((getegid() != orig_gid) || (geteuid() != orig_uid)) {
+		fprintf(stderr, "Error: Failed to drop privileges, aborting\n");
+		exit(EXIT_FAILURE);
+	}
+
+	printf("uid=%u euid=%u\n", (unsigned)getuid(), (unsigned)geteuid());
+	// if egid != gid, we restore it as well
+	printf("gid=%u egid=%u\n", (unsigned)getgid(), (unsigned)getegid());
 }
 
 int shoudStopRunning(int running)
@@ -94,11 +133,15 @@ int shoudStopRunning(int running)
 	return 1;
 }
 
-void start_server(int port, int log, int deamon, int setting)
+void start_server(int port, int log, int deamon, int setting, int use_jail)
 {
-	change_chroot();
-
-	logging_log_to_file(log);
+	// Open log files before using chroot
+	logging_open(log);
+	
+	if (use_jail == 1)
+	{
+		change_chroot();
+	}
 
 	// Initilize the server
 	set_ip_type(0);
@@ -109,7 +152,7 @@ void start_server(int port, int log, int deamon, int setting)
 
 	thread_manager_init_threads(START_NUM_THREADS);
 
-	request_init();
+	request_init(use_jail);
 
 	int running = 1;
 	while (shoudStopRunning(running))
@@ -120,6 +163,7 @@ void start_server(int port, int log, int deamon, int setting)
 		{
 			Thread_args *args = malloc(sizeof(Thread_args));
 			args->client = client;
+			args->use_jail = use_jail;
 			int rc = thread_manager_new_thread(client_thread, (void *)args);
 			if (rc)
 			{
@@ -132,6 +176,13 @@ void start_server(int port, int log, int deamon, int setting)
 
 	thread_manager_terminate_threads();
 	closeServer();
+
+	if (use_jail)
+	{
+		chroot(".");
+	}
+
+	logging_close();
 }
 
 int read_int_from_file(char *config_line)
@@ -158,6 +209,9 @@ int read_int_from_file(char *config_line)
 
 int main(int argc, char const *argv[])
 {
+	// Open lab2-config before using chroot
+	init_configurations();
+
 	int given_port;
 	int given_port_true = 1;
 	int deamon;
@@ -166,6 +220,7 @@ int main(int argc, char const *argv[])
 	int log_true = 1;
 	int setting;
 	int setting_true = 1;
+	int use_jail = 0;
 
 	if (argc != 1)
 	{
@@ -262,6 +317,10 @@ int main(int argc, char const *argv[])
 					return 3;
 				}
 			}
+			else if (strcmp(argv[number_arguments], "-j") == 0)
+			{
+				use_jail = 1;	
+			}
 			number_arguments++;
 		}
 
@@ -282,7 +341,7 @@ int main(int argc, char const *argv[])
 			setting = read_int_from_file("SERVER_SETTING=");
 		}
 
-		start_server(given_port, log, deamon, setting);
+		start_server(given_port, log, deamon, setting, use_jail);
 	}
 	else
 	{
@@ -292,7 +351,7 @@ int main(int argc, char const *argv[])
 		log = read_int_from_file("SERVER_LOG=");
 		setting = read_int_from_file("SERVER_SETTING=");
 
-		start_server(given_port, log, deamon, setting);
+		start_server(given_port, log, deamon, setting, use_jail);
 	}
 	return 0;
 }

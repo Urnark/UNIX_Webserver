@@ -44,16 +44,16 @@ typedef struct request_t
 char path_www_folder[PATH_MAX];
 int request_stop_reciving_data;
 
-void _set_path_to_www_folder();
+void _set_path_to_www_folder(int use_jail);
 void free_headers(Headers* headers);
 void _init_headers(Headers* headers);
 int _set_header(char** header, char* current_line, const char* comp_str);
 Request_type _populate_headers(Headers* headers, char* current_line);
 int _check_method(Request_t* request, Request_type rt, char* first_word);
 int _check_http_version(Request_t* request, char* method);
-int _check_uri(Request_t* request, char* method);
-Request_t _process_request(char* request);
-void request_init();
-Request_t request_received(Client* client);
+int _check_uri(Request_t* request, char* method, int use_jail);
+Request_t _process_request(char* request, int use_jail);
+void request_init(int use_jail);
+Request_t request_received(Client* client, int use_jail);
 
 #endif
