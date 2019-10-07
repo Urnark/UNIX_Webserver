@@ -54,7 +54,7 @@ int main(int argc, char const *argv[])
 		{
 			if (strcmp(argv[number_arguments], "-h") == 0)
 			{
-				printf("Usage: server [OPTION]...\n\n");
+				printf("Usage: server [-dlrj] [-p port_number] [-s thread | -s fork]\n\n");
 				printf("%s %-20s %-20s","", "-h,", "dislay help.\n");
 				printf("%s %-20s %-20s","", "-p [0-65535],", "overwrites the default port used by the server on initialization.\n");
 				printf("%s %-20s %-20s","", "-d,", "starts the server as deamon.\n");
@@ -73,7 +73,6 @@ int main(int argc, char const *argv[])
 					if (end == argv[number_arguments + 1])
 					{
 						printf("Wrong input. Try -h for help and command information.\n");
-						exit(-1);
 						return 3;
 					}
 					else
@@ -86,19 +85,8 @@ int main(int argc, char const *argv[])
 				else
 				{
 					printf("Wrong input. Try -h for help and command information.\n");
-					exit(-1);
 					return 3;
 				}
-			}
-			else if (strcmp(argv[number_arguments], "-d") == 0)
-			{
-				deamon = 1;
-				deamon_true = 0;
-			}
-			else if (strcmp(argv[number_arguments], "-l") == 0)
-			{
-				log = 1;
-				log_true = 0;
 			}
 			else if (strcmp(argv[number_arguments], "-s") == 0)
 			{
@@ -119,39 +107,56 @@ int main(int argc, char const *argv[])
 					else
 					{
 						printf("Wrong input. Try -h for help and command information.\n");
-						exit(-1);
 						return 3;
 					}
 				}
 				else
 				{
 					printf("Wrong input. Try -h for help and command information.\n");
-					exit(-1);
 					return 3;
 				}
 			}
-			else if (strcmp(argv[number_arguments], "-r") == 0)
+			else if (argv[number_arguments][0] == '-')
 			{
-				if (repair_config_file())
+				for (int i = 1; i < strlen(argv[number_arguments]); i++)
 				{
-					exit(0);
-					return 0;
+					switch (argv[number_arguments][i])
+					{
+					case 'd':
+						deamon = 1;
+						deamon_true = 0;
+						break;
+					case 'l':
+						log = 1;
+						log_true = 0;
+						break;
+					case 'r':
+						if (repair_config_file())
+						{
+							printf("Repaired configuration file.\n");
+							return 0;
+						}
+						else
+						{
+							fprintf(stderr, "ERROR: Repaired configuration file.\n");
+							exit(-1);
+						}
+						break;
+					case 'j':
+						#if MY_DEBUG
+						use_jail = 0;
+						fprintf(stderr, "ERROR: jail is not to be used if compiled with DEBUG.\n");
+						printf("Running server in default mode instead of DEBUG mode.\n");
+						#else
+						use_jail = 1;
+						#endif // DEBUG
+						break;
+					default:
+						printf("Input not supported. Try -h for help and command information.\n");
+						return 3;
+						break;
+					}
 				}
-				else
-				{
-					exit(-1);
-					return 3;
-				}
-			}
-			else if (strcmp(argv[number_arguments], "-j") == 0)
-			{
-				#if MY_DEBUG
-				use_jail = 0;
-				fprintf(stderr, "ERROR: jail is not to be used if compiled with DEBUG.\n");
-				printf("Running server in default mode instead of DEBUG mode.\n");
-				#else
-				use_jail = 1;
-				#endif // DEBUG
 			}
 			number_arguments++;
 		}
