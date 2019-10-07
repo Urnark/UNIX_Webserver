@@ -32,6 +32,18 @@ int read_int_from_file(char *config_line)
 	}
 }
 
+void print_usage()
+{
+	printf("Usage: server [-dlrj] [-p port_number] [-s thread | -s fork]\n\n");	
+	printf("%s %-20s %-20s","", "-h,", "dislay help.\n");
+	printf("%s %-20s %-20s","", "-p [0-65535],", "overwrites the default port used by the server on initialization.\n");
+	printf("%s %-20s %-20s","", "-d,", "starts the server as deamon.\n");
+	printf("%s %-20s %-20s","", "-l,", "creates a logfile to write in.\n");
+	printf("%s %-20s %-20s","", "-s [thread | fork ],", "sets the requesthandling method of the server.\n");
+	printf("%s %-20s %-20s","", "-r,", "repaires the configuration file and restores the default values.\n");
+	printf("%s %-20s %-20s","", "-j,", "run server with chroot, jail.\n");
+}
+
 int main(int argc, char const *argv[])
 {
 	// Open lab2-config before using chroot
@@ -54,14 +66,7 @@ int main(int argc, char const *argv[])
 		{
 			if (strcmp(argv[number_arguments], "-h") == 0)
 			{
-				printf("Usage: server [-dlrj] [-p port_number] [-s thread | -s fork]\n\n");
-				printf("%s %-20s %-20s","", "-h,", "dislay help.\n");
-				printf("%s %-20s %-20s","", "-p [0-65535],", "overwrites the default port used by the server on initialization.\n");
-				printf("%s %-20s %-20s","", "-d,", "starts the server as deamon.\n");
-				printf("%s %-20s %-20s","", "-l,", "creates a logfile to write in.\n");
-				printf("%s %-20s %-20s","", "-s [thread | fork ],", "sets the requesthandling method of the server.\n");
-				printf("%s %-20s %-20s","", "-r,", "repaires the configuration file and restores the default values.\n");
-				printf("%s %-20s %-20s","", "-j,", "run server with chroot, jail.\n");
+				print_usage();
 				return 0;
 			}
 			else if (strcmp(argv[number_arguments], "-p") == 0)
@@ -72,7 +77,8 @@ int main(int argc, char const *argv[])
 					long int result = strtol(argv[number_arguments + 1], &end, 10);
 					if (end == argv[number_arguments + 1])
 					{
-						printf("Wrong input. Try -h for help and command information.\n");
+						printf("Wrong input.\n");
+						print_usage();
 						return 3;
 					}
 					else
@@ -84,7 +90,8 @@ int main(int argc, char const *argv[])
 				}
 				else
 				{
-					printf("Wrong input. Try -h for help and command information.\n");
+					printf("Wrong input.\n");
+					print_usage();
 					return 3;
 				}
 			}
@@ -106,13 +113,15 @@ int main(int argc, char const *argv[])
 					}
 					else
 					{
-						printf("Wrong input. Try -h for help and command information.\n");
+						printf("Wrong input.\n");
+						print_usage();
 						return 3;
 					}
 				}
 				else
 				{
-					printf("Wrong input. Try -h for help and command information.\n");
+					printf("Wrong input.\n");
+					print_usage();
 					return 3;
 				}
 			}
@@ -153,7 +162,8 @@ int main(int argc, char const *argv[])
 						#endif // DEBUG
 						break;
 					default:
-						printf("Input [%s] not supported. Try -h for help and command information.\n", &c);
+						printf("Input [%s] not supported.\n", &c);
+						print_usage();
 						return 3;
 						break;
 					}
