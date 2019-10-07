@@ -1,7 +1,7 @@
 // Need to be defined for chroot to work
-#define _POSIX_C_SOURCE 199309L
-#define _XOPEN_SOURCE 500
-#define _BSD_SOURCE 
+//#define _POSIX_C_SOURCE 199309L
+//#define _XOPEN_SOURCE 500
+//#define _BSD_SOURCE 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -323,6 +323,7 @@ int main(int argc, char const *argv[])
 				#if MY_DEBUG
 				use_jail = 0;
 				fprintf(stderr, "ERROR: jail is not to be used if compiled with DEBUG.\n");
+				printf("Running server in default mode instead of DEBUG mode.\n");
 				#else
 				use_jail = 1;
 				#endif // DEBUG

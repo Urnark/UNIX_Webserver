@@ -28,7 +28,11 @@ void logging_open(int to_file)
     if (logging_file)
     {
         logging_fd = fopen(LOGGING_PATH_LOG_FILE, "a");
+        // To be able to write to file before closing it
+        setlinebuf(logging_fd);
         logging_fd_err = fopen(LOGGING_PATH_LOG_ERR_FILE, "a");
+        // To be able to write to file before closing it
+        setlinebuf(logging_fd_err);
     }
     else
     {
