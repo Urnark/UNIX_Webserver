@@ -154,50 +154,24 @@ void start_server(char* document_root_path, int port, int log, int deamon, int s
     }
 
     closeServer();
-    
-	if (use_jail)
-	{
-		chroot(".");
-	}
 
 	logging_close();
 }
 
 void change_chroot(char* document_root_path)
 {
-	char project_path[PATH_MAX];
-	getcwd(project_path, sizeof(project_path));
-	// Remove the last direcotry
-    int len = strlen(project_path);
-    int index = len - 1;
-    while(project_path[index--] != '/'){}
-    project_path[index + 1] = '\0';
+	printf("%s\n", document_root_path);
 
-	strcat(project_path, "/www/");
-
-	printf("%s\n", project_path);
-
-	printf("uid=%u euid=%u\n",  (unsigned)getuid(), (unsigned)geteuid());
- 	// if egid != gid, we restore it as well (later)
- 	printf("gid=%u egid=%u\n", (unsigned)getgid(), (unsigned)getegid());
-	setuid(geteuid());
-	printf("uid=%u euid=%u\n",  (unsigned)getuid(), (unsigned)geteuid());
- 	// if egid != gid, we restore it as well (later)
- 	printf("gid=%u egid=%u\n\n", (unsigned)getgid(), (unsigned)getegid());
-
-	// check that we have the proper creds (need root for chroot)
-   	if ((geteuid() != 0) && (getegid() != 0)) {
-     	fprintf(stderr, "Error: no root privs (suid missing?)\n");
+	// check that we have the proper privileges (need root for chroot)
+   	if (geteuid() != 0 && getegid() != 0) {
+     	fprintf(stderr, "Error: no root privileges.\n");
       	exit(EXIT_FAILURE);
     }
 
-	printf("uid=%u euid=%u\n",  (unsigned)getuid(), (unsigned)geteuid());
- 	// if egid != gid, we restore it as well (later)
- 	printf("gid=%u egid=%u\n", (unsigned)getgid(), (unsigned)getegid());
-
-	chdir(project_path);
-	if (chroot(project_path) == -1)
+	chdir(document_root_path);
+	if (chroot(document_root_path) == -1)
 	{
+        // This should never happend, because this is check before chroot is called
 		if (errno == EPERM)
 		{
 			fprintf(stderr, "Error: chroot insufficient privilege.\n");
@@ -206,24 +180,14 @@ void change_chroot(char* document_root_path)
 		fprintf(stderr, "Error: in chroot.\n");
 	}
 
-	gid_t orig_gid;
- 	uid_t orig_uid;
-	
-	orig_uid = getuid();
-	orig_gid = getgid();
+	gid_t orig_gid = getgid();
+ 	uid_t orig_uid = getuid();
+    
 	setregid(-1, orig_gid);
 	setreuid(-1, orig_uid);
-
-	printf("uid=%u euid=%u\n", (unsigned)getuid(), (unsigned)geteuid());
-	// if egid != gid, we restore it as well
-	printf("gid=%u egid=%u\n", (unsigned)getgid(), (unsigned)getegid());
 
 	if ((getegid() != orig_gid) || (geteuid() != orig_uid)) {
 		fprintf(stderr, "Error: Failed to drop privileges, aborting\n");
 		exit(EXIT_FAILURE);
 	}
-
-	printf("uid=%u euid=%u\n", (unsigned)getuid(), (unsigned)geteuid());
-	// if egid != gid, we restore it as well
-	printf("gid=%u egid=%u\n", (unsigned)getgid(), (unsigned)getegid());
 }
