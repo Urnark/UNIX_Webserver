@@ -5,22 +5,18 @@
 #include <errno.h>
 #include <sys/time.h>
 
-void _set_path_to_www_folder(int use_jail)
+void _set_path_to_www_folder(char* document_root_path, int use_jail)
 {
-    // Get current working directory
-    getcwd(path_www_folder, sizeof(path_www_folder));
-
-    // Remove the last direcotry
-    int len = strlen(path_www_folder);
-    int index = len - 1;
-    while(path_www_folder[index--] != '/'){}
-    path_www_folder[index + 1] = '\0';
-
-    // Add www to the path if not jail, else only /
+    // Add the path to www to the path if not jail, else only /
     if (use_jail)
+    {
         strcat(path_www_folder, "/");
+    }
     else
-        strcat(path_www_folder, "/www");
+    {
+        strcpy(path_www_folder, document_root_path);
+        strcat(path_www_folder, "/");
+    }
 }
 
 void free_headers(Headers* headers)
@@ -306,10 +302,10 @@ Request_t _process_request(char* request, int use_jail)
     return request_ret;
 }
 
-void request_init(int use_jail)
+void request_init(char* document_root_path, int use_jail)
 {
     request_stop_reciving_data = 0;
-    _set_path_to_www_folder(use_jail);
+    _set_path_to_www_folder(document_root_path, use_jail);
 }
 
 Request_t request_received(Client* client, int use_jail)

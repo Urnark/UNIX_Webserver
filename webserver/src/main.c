@@ -44,6 +44,12 @@ void print_usage()
 	printf("%s %-20s %-20s","", "-j,", "run server with chroot, jail.\n");
 }
 
+void server_exit(int exit_code)
+{
+	free_configurations();
+	exit(exit_code);
+}
+
 int main(int argc, char const *argv[])
 {
 	// Open lab2-config before using chroot
@@ -67,7 +73,7 @@ int main(int argc, char const *argv[])
 			if (strcmp(argv[number_arguments], "-h") == 0)
 			{
 				print_usage();
-				return 0;
+				server_exit(0);
 			}
 			else if (strcmp(argv[number_arguments], "-p") == 0)
 			{
@@ -79,7 +85,7 @@ int main(int argc, char const *argv[])
 					{
 						printf("Wrong input.\n");
 						print_usage();
-						return 3;
+						server_exit(3);
 					}
 					else
 					{
@@ -92,7 +98,7 @@ int main(int argc, char const *argv[])
 				{
 					printf("Wrong input.\n");
 					print_usage();
-					return 3;
+					server_exit(3);
 				}
 			}
 			else if (strcmp(argv[number_arguments], "-s") == 0)
@@ -115,22 +121,21 @@ int main(int argc, char const *argv[])
 					{
 						printf("Wrong input.\n");
 						print_usage();
-						return 3;
+						server_exit(3);
 					}
 				}
 				else
 				{
 					printf("Wrong input.\n");
 					print_usage();
-					return 3;
+					server_exit(3);
 				}
 			}
 			else if (argv[number_arguments][0] == '-')
 			{
 				for (int i = 1; i < strlen(argv[number_arguments]); i++)
 				{
-					char c = argv[number_arguments][i];
-					switch (c)
+					switch (argv[number_arguments][i])
 					{
 					case 'd':
 						deamon = 1;
@@ -144,12 +149,12 @@ int main(int argc, char const *argv[])
 						if (repair_config_file())
 						{
 							printf("Repaired configuration file.\n");
-							return 0;
+							server_exit(0);
 						}
 						else
 						{
 							fprintf(stderr, "ERROR: Repaired configuration file.\n");
-							exit(-1);
+							server_exit(-1);
 						}
 						break;
 					case 'j':
@@ -162,9 +167,9 @@ int main(int argc, char const *argv[])
 						#endif // DEBUG
 						break;
 					default:
-						printf("Input [%s] not supported.\n", &c);
+						printf("Input [%s] not supported.\n", &argv[number_arguments][i]);
 						print_usage();
-						return 3;
+						server_exit(3);
 						break;
 					}
 				}
@@ -189,7 +194,7 @@ int main(int argc, char const *argv[])
 			setting = read_int_from_file("SERVER_SETTING=");
 		}
 
-		start_server(given_port, log, deamon, setting, use_jail);
+		start_server(server_configurations.document_root_path, given_port, log, deamon, setting, use_jail);
 	}
 	else
 	{
@@ -199,7 +204,7 @@ int main(int argc, char const *argv[])
 		log = read_int_from_file("SERVER_LOG=");
 		setting = read_int_from_file("SERVER_SETTING=");
 
-		start_server(given_port, log, deamon, setting, use_jail);
+		start_server(server_configurations.document_root_path, given_port, log, deamon, setting, use_jail);
 	}
-	return 0;
+	server_exit(0);
 }

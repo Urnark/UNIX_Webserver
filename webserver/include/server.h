@@ -24,8 +24,8 @@ typedef struct thread_args
     int is_fork;
 } Thread_args;
 
-void start_server(int port, int log, int deamon, int setting, int use_jail);
-void change_chroot();
+void start_server(char* document_root_path, int port, int log, int deamon, int setting, int use_jail);
+void change_chroot(char* document_root_path);
 
 
 #endif

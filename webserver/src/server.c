@@ -117,14 +117,14 @@ void create_a_deamon()
     //code here 
 }
 
-void start_server(int port, int log, int deamon, int setting, int use_jail)
+void start_server(char* document_root_path, int port, int log, int deamon, int setting, int use_jail)
 {
 	// Open log files before using chroot
 	logging_open(log);
 	
 	if (use_jail == 1)
 	{
-		change_chroot();
+		change_chroot(document_root_path);
 	}
 
     // Initilize the server
@@ -134,7 +134,7 @@ void start_server(int port, int log, int deamon, int setting, int use_jail)
     createSocket(10);
     setToNonBlocking();
 
-    request_init(use_jail);
+    request_init(document_root_path, use_jail);
     
     if (setting == 1)
     {
@@ -163,7 +163,7 @@ void start_server(int port, int log, int deamon, int setting, int use_jail)
 	logging_close();
 }
 
-void change_chroot()
+void change_chroot(char* document_root_path)
 {
 	char project_path[PATH_MAX];
 	getcwd(project_path, sizeof(project_path));
