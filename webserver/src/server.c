@@ -83,6 +83,11 @@ void handle_fork()
     request_stop_reciving_data = 1;
 }
 
+void create_a_deamon()
+{
+    //code here 
+}
+
 void start_server(int port, int log, int deamon, int setting)
 {
     logging_log_to_file(log);
@@ -96,26 +101,21 @@ void start_server(int port, int log, int deamon, int setting)
 
     request_init();
 
-    if (deamon == 0)
-    {
+    
         if (setting == 1)
         {
+            if (deamon == 1)
+                {
+                    create_a_deamon();
+                }
             handle_fork();
         }
         else if(setting == 0)
         {
-            handle_threading();
-        }
-    }
-    else if(deamon == 1)
-    {
-        //create deamon then:
-        if (setting == 1)
-        {
-            handle_fork();
-        }
-        else if(setting == 0)
-        {
+            if (deamon == 1)
+                {
+                    create_a_deamon();
+                }
             handle_threading();
         }
     }
