@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <sys/time.h>
 
-void _set_path_to_www_folder()
+void _set_path_to_www_folder(int use_jail)
 {
     // Get current working directory
     getcwd(path_www_folder, sizeof(path_www_folder));
@@ -16,8 +16,11 @@ void _set_path_to_www_folder()
     while(path_www_folder[index--] != '/'){}
     path_www_folder[index + 1] = '\0';
 
-    // Add www to the path
-    strcat(path_www_folder, "/www");
+    // Add www to the path if not jail, else only /
+    if (use_jail)
+        strcat(path_www_folder, "/");
+    else
+        strcat(path_www_folder, "/www");
 }
 
 void free_headers(Headers* headers)
@@ -137,10 +140,13 @@ int _check_http_version(Request_t* request, char* method)
     return 1;
 }
 
-int _check_uri(Request_t* request, char* method)
+int _check_uri(Request_t* request, char* method, int use_jail)
 {
     char uri[PATH_MAX];
-    strcat(uri, "../www");
+    if (!use_jail)
+    {
+        strcat(uri, "../www");
+    }
     size_t n = strlen(method);
     char* p = strchr(method, ' ');
     if (p != NULL)
@@ -160,7 +166,7 @@ int _check_uri(Request_t* request, char* method)
     if (request->http_version == HTTP_0_9)
         uri[strlen(uri) - 1] = '\0';
 
-    if (strcmp(uri, "../www") == 0)
+    if (use_jail? uri[0] == '\0' : strcmp(uri, "../www") == 0)
     {
         printf("400 Bad Request, missing URI\n");
         request->response_code = 400;
@@ -227,7 +233,7 @@ void _add_get_head_on_method(char* first_word, Request_t* request_ret)
     free(temp);
 }
 
-Request_t _process_request(char* request)
+Request_t _process_request(char* request, int use_jail)
 {
     Request_t request_ret;
     request_ret.http_version = HTTP_1_0;
@@ -277,7 +283,7 @@ Request_t _process_request(char* request)
             _add_get_head_on_method(first_word, &request_ret);
             return request_ret;
         }
-        if (_check_uri(&request_ret, request_ret.headers.method))
+        if (_check_uri(&request_ret, request_ret.headers.method, use_jail))
         {
             _add_get_head_on_method(first_word, &request_ret);
             return request_ret;
@@ -300,13 +306,13 @@ Request_t _process_request(char* request)
     return request_ret;
 }
 
-void request_init()
+void request_init(int use_jail)
 {
     request_stop_reciving_data = 0;
-    _set_path_to_www_folder();
+    _set_path_to_www_folder(use_jail);
 }
 
-Request_t request_received(Client* client)
+Request_t request_received(Client* client, int use_jail)
 {
     struct timeval start, now;
     gettimeofday(&start, NULL);
@@ -338,7 +344,7 @@ Request_t request_received(Client* client)
 	    }
         else
         {
-            return _process_request(request);
+            return _process_request(request, use_jail);
         }
         
     }

@@ -66,5 +66,6 @@ void thread_manager_exit_thread(void* args)
 
 	pthread_mutex_unlock(&_thread_manager_thread_mutex);
 	free(args);
-	pthread_exit(NULL);
+	// Can not use this with chroot, crashes with: libgcc_s.so.1 must be installed for pthread_cancel to work
+	//pthread_exit(NULL);
 }

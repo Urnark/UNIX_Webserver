@@ -1,43 +1,14 @@
+// Need to be defined for chroot to work
+//#define _POSIX_C_SOURCE 199309L
+//#define _XOPEN_SOURCE 500
+//#define _BSD_SOURCE 
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include <string.h>
 
-#include "../include/threadManager.h"
-#include "../include/socket.h"
-#include "../include/request.h"
-#include "../include/response.h"
-#include "../include/logging.h"
 #include "../include/read_config.h"
-
-#define START_NUM_THREADS 5
-
-int shoudStopRunning(int running)
-{
-	// For checking if the server should be terminated.
-	int retval;
-	fd_set read_fds;
-	struct timeval tv;
-
-	// Watch stdin(fd 0) for input.
-	FD_ZERO(&read_fds);
-	FD_SET(0, &read_fds);
-	// Block for 1 second
-	tv.tv_sec = 0;
-	tv.tv_usec = 5000;
-
-	retval = select(1, &read_fds, NULL, NULL, &tv);
-	if (retval != 0)
-	{
-		printf("Stop Running\n");
-		// Flush input stream
-		char *buffer[512];
-		read(0, buffer, sizeof(buffer));
-		return 0;
-	}
-	return 1;
-}
+#include "../include/server.h"
 
 int read_int_from_file(char *config_line)
 {
@@ -63,6 +34,9 @@ int read_int_from_file(char *config_line)
 
 int main(int argc, char const *argv[])
 {
+	// Open lab2-config before using chroot
+	init_configurations();
+
 	int given_port;
 	int given_port_true = 1;
 	int deamon;
@@ -71,6 +45,7 @@ int main(int argc, char const *argv[])
 	int log_true = 1;
 	int setting;
 	int setting_true = 1;
+	int use_jail = 0;
 
 	if (argc != 1)
 	{
@@ -86,6 +61,7 @@ int main(int argc, char const *argv[])
 				printf("%s %-20s %-20s","", "-l,", "creates a logfile to write in.\n");
 				printf("%s %-20s %-20s","", "-s [thread | fork ],", "sets the requesthandling method of the server.\n");
 				printf("%s %-20s %-20s","", "-r,", "repaires the configuration file and restores the default values.\n");
+				printf("%s %-20s %-20s","", "-j,", "run server with chroot, jail.\n");
 				return 0;
 			}
 			else if (strcmp(argv[number_arguments], "-p") == 0)
@@ -167,6 +143,16 @@ int main(int argc, char const *argv[])
 					return 3;
 				}
 			}
+			else if (strcmp(argv[number_arguments], "-j") == 0)
+			{
+				#if MY_DEBUG
+				use_jail = 0;
+				fprintf(stderr, "ERROR: jail is not to be used if compiled with DEBUG.\n");
+				printf("Running server in default mode instead of DEBUG mode.\n");
+				#else
+				use_jail = 1;
+				#endif // DEBUG
+			}
 			number_arguments++;
 		}
 
@@ -187,7 +173,7 @@ int main(int argc, char const *argv[])
 			setting = read_int_from_file("SERVER_SETTING=");
 		}
 
-		start_server(given_port, log, deamon, setting);
+		start_server(given_port, log, deamon, setting, use_jail);
 	}
 	else
 	{
@@ -197,7 +183,7 @@ int main(int argc, char const *argv[])
 		log = read_int_from_file("SERVER_LOG=");
 		setting = read_int_from_file("SERVER_SETTING=");
 
-		start_server(given_port, log, deamon, setting);
+		start_server(given_port, log, deamon, setting, use_jail);
 	}
 	return 0;
 }

@@ -2,28 +2,53 @@
 #include <syslog.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <linux/limits.h>
 
 const char LOGGING_PATH_LOG_FILE[] = "log/server.log";
 const char LOGGING_PATH_LOG_ERR_FILE[] = "log/server.err";
 
-void logging_log_to_file(int to_file)
+void logging_close()
 {
-    logging_file = to_file;
+    if (logging_file)
+    {
+        fclose(logging_fd);
+        fclose(logging_fd_err);
+    }
+    else
+    {
+        closelog();
+    }
+    
 }
 
-void _logging_log_f(const char* path, char* ip, char* userid, char* time, char*  request, int response_code, char* size_in_bytes, char* referer, char* user_agent)
+void logging_open(int to_file)
 {
-    FILE * f = fopen(path, "a");
-    if (f)
+    logging_file = to_file;
+
+    if (logging_file)
+    {
+        logging_fd = fopen(LOGGING_PATH_LOG_FILE, "a");
+        // To be able to write to file before closing it
+        setlinebuf(logging_fd);
+        logging_fd_err = fopen(LOGGING_PATH_LOG_ERR_FILE, "a");
+        // To be able to write to file before closing it
+        setlinebuf(logging_fd_err);
+    }
+    else
+    {
+        openlog("CardServer", LOG_NDELAY, LOG_USER);
+    }
+    
+}
+
+void _logging_log_f(FILE* fd, char* ip, char* userid, char* time, char*  request, int response_code, char* size_in_bytes, char* referer, char* user_agent)
+{
+    if (fd)
     {
         if (referer == NULL)
-            fprintf(f, "%s - %s %s \"%s\" %d %s\n", ip, userid, time, request, response_code, size_in_bytes);
+            fprintf(fd, "%s - %s %s \"%s\" %d %s\n", ip, userid, time, request, response_code, size_in_bytes);
         else
-            fprintf(f, "%s - %s %s \"%s\" %d %s \"%s\" \"%s\"\n", ip, userid, time, request, response_code, size_in_bytes, referer, user_agent);
-        
-        fclose(f);
+            fprintf(fd, "%s - %s %s \"%s\" %d %s \"%s\" \"%s\"\n", ip, userid, time, request, response_code, size_in_bytes, referer, user_agent);
     }
 }
 
@@ -45,23 +70,20 @@ void _logging_log(int pri, char* ip, char* userid, char* time, char* request, in
     if (logging_file)
     {
         if (referer == NULL)
-            _logging_log_f((pri == LOG_ERR?LOGGING_PATH_LOG_ERR_FILE:LOGGING_PATH_LOG_FILE), ip, (userid != NULL?userid:"-"), 
+            _logging_log_f((pri == LOG_ERR?logging_fd_err:logging_fd), ip, (userid != NULL?userid:"-"), 
                 time, r, response_code, (size_in_bytes != 0?size:"-"), NULL, NULL);
         else
-            _logging_log_f((pri == LOG_ERR?LOGGING_PATH_LOG_ERR_FILE:LOGGING_PATH_LOG_FILE), ip, (userid != NULL?userid:"-"), 
+            _logging_log_f((pri == LOG_ERR?logging_fd_err:logging_fd), ip, (userid != NULL?userid:"-"), 
                 time, r, response_code, (size_in_bytes != 0?size:"-"), referer, user_agent);
     }
     else
     {
-        openlog("CardServer", LOG_NDELAY, LOG_USER);
         if (referer == NULL)
             syslog(pri, "%s - %s %s \"%s\" %d %s %s %s", ip, (userid != NULL?userid:"-"), 
                 time, r, response_code, (size_in_bytes != 0?size:"-"));
         else
             syslog(pri, "%s - %s %s \"%s\" %d %s \"%s\" \"%s\"", ip, (userid != NULL?userid:"-"), 
                 time, r, response_code, (size_in_bytes != 0?size:"-"), referer, user_agent);
-        
-        closelog();
     }
 
     free(size);

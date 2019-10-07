@@ -1,7 +1,7 @@
 #include "../include/read_config.h"
 #include <stdlib.h>
 
-void read_config_file(char* data, ServerConfig* sc)
+void init_configurations()
 {
 	static const char filename[]="lab2-config";
     char buffer[256];
@@ -9,21 +9,32 @@ void read_config_file(char* data, ServerConfig* sc)
 
     if(f)
     {
-        char* ptr = NULL;
-        while (ptr == NULL && fgets(buffer, 256, f) != NULL)
+        int pointer = ftell(f);
+        fseek(f, 0L, SEEK_END);
+        int size = ftell(f);
+        fseek(f, pointer, SEEK_SET);
+
+        server_configurations.config_data = malloc(size + 1);
+        if (server_configurations.config_data)
         {
-            ptr = strstr(buffer, data);
-            if (ptr != NULL)
-            {
-                size_t length = strlen((char*)(buffer + strlen(data)));
-                sc->config_data = malloc(length);
-                strncpy(sc->config_data, buffer + strlen(data), length - 1);
-                sc->config_data[length - 1] ='\0';
-            }
+            fread(server_configurations.config_data, 1, size, f);
+            server_configurations.config_data[size] = '\0';
         }
     }
-
+    
     fclose(f);
+}
+
+void read_config_file(char* data, ServerConfig* sc)
+{
+    char* ptr = strstr(server_configurations.config_data, data);
+    if (ptr != NULL)
+    {
+        size_t length = strlen((char*)(ptr + strlen(data)));
+        sc->config_data = malloc(length);
+        strncpy(sc->config_data, ptr + strlen(data), length - 1);
+        sc->config_data[length - 1] ='\0';
+    }
 }
 
 int repair_config_file(){
