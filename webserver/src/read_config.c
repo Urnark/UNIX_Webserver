@@ -3,10 +3,11 @@
 #include <linux/limits.h>
 #include <unistd.h>
 
-const char FILENAME[] = "lab2-config";
+const char FILENAME[] = ".lab2-config";
 
 void init_configurations()
 {
+    server_configurations.document_root_path = NULL;
     FILE* f = fopen(FILENAME , "r");
 
     if(f)
@@ -22,15 +23,16 @@ void init_configurations()
             fread(server_configurations.config_data, 1, size, f);
             server_configurations.config_data[size] = '\0';
         }
-    }
-    
-    fclose(f);
+        
+        fclose(f);
+        
 
-    ServerConfig sc;
-    read_config_file("SERVER_DOCUMENT_ROOT=", &sc);
-    server_configurations.document_root_path = malloc(strlen(sc.config_data) + 1);
-	strcpy(server_configurations.document_root_path, sc.config_data);
-	free(sc.config_data);
+        ServerConfig sc;
+        read_config_file("SERVER_DOCUMENT_ROOT=", &sc);
+        server_configurations.document_root_path = malloc(strlen(sc.config_data) + 1);
+        strcpy(server_configurations.document_root_path, sc.config_data);
+        free(sc.config_data);
+    }
 }
 
 void free_configurations()
@@ -65,7 +67,7 @@ int repair_config_file(){
             return 0;
         }
     }
-    else if (status==1)
+    else if (status==-1)
     {
         status = create_config_file();
         if (status)
