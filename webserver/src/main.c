@@ -120,7 +120,8 @@ int main(int argc, char const *argv[])
 			{
 				for (int i = 1; i < strlen(argv[number_arguments]); i++)
 				{
-					switch (argv[number_arguments][i])
+					char c = argv[number_arguments][i];
+					switch (c)
 					{
 					case 'd':
 						deamon = 1;
@@ -152,7 +153,7 @@ int main(int argc, char const *argv[])
 						#endif // DEBUG
 						break;
 					default:
-						printf("Input not supported. Try -h for help and command information.\n");
+						printf("Input [%s] not supported. Try -h for help and command information.\n", &c);
 						return 3;
 						break;
 					}
