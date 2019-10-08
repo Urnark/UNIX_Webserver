@@ -76,11 +76,12 @@ void handle_threading(int use_jail)
 
 void handle_fork(int use_jail)
 {
-    pid_t origin = getpid();
+    pid_t origin;
     pid_t p;
     p = fork();
-    printf("pid: %d", p);
-    printf("pid: %d", origin);
+    if(p!=0){
+         origin = getpid();
+    }
     int running = 1;
     while (shoudStopRunning(running))
     {
@@ -95,8 +96,7 @@ void handle_fork(int use_jail)
                 args->use_jail = use_jail;
                 pid_t p_two;
                 p_two = fork();
-                printf("pid: %d", p_two);
-                if (p_two != 0)
+                if (p_two == 0)
                 {
                     args->is_fork == 1;
                     client_function((void *)args);
@@ -106,9 +106,29 @@ void handle_fork(int use_jail)
         }
         else
         {
-            //handle childsignals
+            while (1) {
+                int status;
+                pid_t pid = waitpid(-1, &status, WNOHANG);
+                if (pid <= 0) {
+                    break;
+                }
+            }
         }
     }
+    if(p != origin){
+        exit(0);
+    }
+    else
+    {
+       while (1) {
+                int status;
+                pid_t pid = waitpid(-1, &status, WNOHANG);
+                if (pid <= 0) {
+                    break;
+                }
+            }
+    }
+    
     request_stop_reciving_data = 1;
 }
 

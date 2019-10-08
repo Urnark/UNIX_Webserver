@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <signal.h>
+#include <sys/wait.h>
 
 #include "../include/threadManager.h"
 #include "../include/socket.h"
