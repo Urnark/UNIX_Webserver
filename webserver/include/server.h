@@ -9,6 +9,9 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/resource.h>
 
 #include "../include/threadManager.h"
 #include "../include/socket.h"

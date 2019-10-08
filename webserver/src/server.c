@@ -114,9 +114,41 @@ void handle_fork(int use_jail)
     request_stop_reciving_data = 1;
 }
 
-void create_a_deamon()
+void create_a_deamon(char *document_root_path)
 {
-    //code here
+    int fd0, fd1, fd2;
+    pid_t pid;
+    struct rlimit rl;
+    
+    umask(0);
+    getrlimit(RLIMIT_NOFILE, &rl);
+
+    pid = fork();
+    if (pid != 0)
+    {
+        exit(0);
+    }
+    setsid();
+    signal(SIGHUP, SIG_IGN);
+    pid = fork();
+    if (pid != 0)
+    {
+        exit(0);
+    }
+    chdir(document_root_path);
+    if (rl.rlim_max == RLIM_INFINITY)
+    {
+        rl.rlim_max = 1024;
+    }
+
+    for (int i = 0; i < rl.rlim_max; i++)
+    {
+        close(i);
+    }
+
+    fd0 = open("/dev/null", O_RDWR);
+    fd1 = dup(0);
+    fd2 = dup(0);
 }
 
 void start_server(char *document_root_path, int port, int log, int deamon, int setting, int use_jail)
@@ -142,7 +174,7 @@ void start_server(char *document_root_path, int port, int log, int deamon, int s
     {
         if (deamon == 1)
         {
-            create_a_deamon();
+            create_a_deamon(document_root_path);
         }
         handle_fork(use_jail);
     }
@@ -150,7 +182,7 @@ void start_server(char *document_root_path, int port, int log, int deamon, int s
     {
         if (deamon == 1)
         {
-            create_a_deamon();
+            create_a_deamon(document_root_path);
         }
         handle_threading(use_jail);
     }
