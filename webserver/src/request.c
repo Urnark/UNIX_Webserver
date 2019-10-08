@@ -15,7 +15,6 @@ void _set_path_to_www_folder(char* document_root_path, int use_jail)
     else
     {
         strcpy(path_www_folder, document_root_path);
-        strcat(path_www_folder, "/");
     }
 }
 
