@@ -13,7 +13,7 @@ int thread_manager_new_thread(void*(*func)(void*), void* args)
 	_thread_manager_Thread_info* ti = (_thread_manager_Thread_info*)malloc(sizeof(_thread_manager_Thread_info));
 	ti->id = _thread_manager_NEW_ID++;
 	array_push_element(&_thread_manager_array, (void*)ti);
-
+	
 	//printf("Array size: %zu, capacity: %zu, s: %zu\n", array.size, array.capacity, array.item_size);
 	_thread_manager_Thread_info* thread_i = (_thread_manager_Thread_info*)array_get(&_thread_manager_array, _thread_manager_array.size - 1);
 	int ret = 0;
@@ -26,6 +26,9 @@ int thread_manager_new_thread(void*(*func)(void*), void* args)
 	{
 		ret = pthread_create(&(thread_i->thread), NULL, func,(void*) &(thread_i->id));
 	}
+	
+	// Detach thread
+	pthread_detach(thread_i->thread);
 
 	pthread_mutex_unlock(&_thread_manager_thread_mutex);
 	return ret;
@@ -35,10 +38,10 @@ void thread_manager_terminate_threads()
 {
 	pthread_mutex_destroy(&_thread_manager_thread_mutex);
 
-	for (int i = 0; i < _thread_manager_array.size; i++)
+	/*for (int i = 0; i < _thread_manager_array.size; i++)
 	{
 		pthread_join(((_thread_manager_Thread_info*)array_get(&_thread_manager_array, i))->thread, NULL);
-	}
+	}*/
 
 	// Because the Thread_info is allocated on the heap, free needs to be called
 	for (int i = 0; i < _thread_manager_array.size; i++)
@@ -66,6 +69,4 @@ void thread_manager_exit_thread(void* args)
 
 	pthread_mutex_unlock(&_thread_manager_thread_mutex);
 	free(args);
-	// Can not use this with chroot, crashes with: libgcc_s.so.1 must be installed for pthread_cancel to work
-	//pthread_exit(NULL);
 }
