@@ -102,9 +102,10 @@ int create_config_file(){
         fprintf(f, "SERVER_NAME=Card_Server\n");
         fprintf(f, "SERVER_VERSION=0.2\n");
         fprintf(f, "SERVER_PORT=4444\n");
-        fprintf(f, "SERVER_AS_DEAMON=1\n");
+        fprintf(f, "SERVER_AS_DEAMON=0\n");
         fprintf(f, "SERVER_LOG=0\n");
         fprintf(f, "SERVER_SETTING=0\n");
+        fprintf(f, "SERVER_JAIL=0\n");
     }
     else{
         fclose(f);

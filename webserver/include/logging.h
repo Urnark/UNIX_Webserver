@@ -8,6 +8,7 @@ FILE* logging_fd;
 FILE* logging_fd_err;
 
 void logging_close();
+void logging_get_path();
 void logging_open(int to_file);
 void _logging_log_f(FILE* fd, char* ip, char* userid, char* time, char* request, int response_code, char* size_in_bytes, char* referer, char* user_agent);
 void _logging_log(int pri, char* ip, char* userid, char* time, char* request, int response_code, int size_in_bytes, char* referer, char* user_agent);

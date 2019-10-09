@@ -64,6 +64,7 @@ int main(int argc, char const *argv[])
 	int setting;
 	int setting_true = 1;
 	int use_jail = 0;
+	int jail_true = 1;
 
 	if (argc != 1)
 	{
@@ -165,6 +166,8 @@ int main(int argc, char const *argv[])
 						#else
 						use_jail = 1;
 						#endif // DEBUG
+						
+						jail_true = 0;
 						break;
 					default:
 						printf("Input [%s] not supported.\n", &argv[number_arguments][i]);
@@ -193,6 +196,10 @@ int main(int argc, char const *argv[])
 		{
 			setting = read_int_from_file("SERVER_SETTING=");
 		}
+		if (jail_true == 1)
+		{
+			use_jail = read_int_from_file("SERVER_JAIL=");
+		}
 
 		start_server(server_configurations.document_root_path, given_port, log, deamon, setting, use_jail);
 	}
@@ -203,6 +210,7 @@ int main(int argc, char const *argv[])
 		deamon = read_int_from_file("SERVER_AS_DEAMON=");
 		log = read_int_from_file("SERVER_LOG=");
 		setting = read_int_from_file("SERVER_SETTING=");
+		use_jail = read_int_from_file("SERVER_JAIL=");
 
 		start_server(server_configurations.document_root_path, given_port, log, deamon, setting, use_jail);
 	}

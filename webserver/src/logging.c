@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <linux/limits.h>
 
-const char LOGGING_PATH_LOG_FILE[] = "log/server.log";
-const char LOGGING_PATH_LOG_ERR_FILE[] = "log/server.err";
+char* LOGGING_PATH_LOG_FILE = NULL;
+char* LOGGING_PATH_LOG_ERR_FILE = NULL;
 
 void logging_close()
 {
@@ -19,6 +19,24 @@ void logging_close()
         closelog();
     }
     
+    free(LOGGING_PATH_LOG_FILE);
+    free(LOGGING_PATH_LOG_ERR_FILE);
+}
+
+void logging_get_path()
+{
+    char path[PATH_MAX];
+    getcwd(path, sizeof(path));
+    
+    char log[] = "/log/server.log";
+    LOGGING_PATH_LOG_FILE = malloc(strlen(path) + strlen(log) + 1);
+    strcpy(LOGGING_PATH_LOG_FILE, path);
+    strcat(LOGGING_PATH_LOG_FILE, log);
+
+    char log_err[] = "/log/server.err";
+    LOGGING_PATH_LOG_ERR_FILE = malloc(strlen(path) + strlen(log_err) + 1);
+    strcpy(LOGGING_PATH_LOG_ERR_FILE, path);
+    strcat(LOGGING_PATH_LOG_ERR_FILE, log_err);
 }
 
 void logging_open(int to_file)

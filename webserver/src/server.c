@@ -47,11 +47,11 @@ int shoudStopRunning(int running)
     return 1;
 }
 
-void handle_threading(int use_jail)
+void handle_threading(int use_jail, int daemon)
 {
     thread_manager_init_threads(START_NUM_THREADS);
     int running = 1;
-    while (shoudStopRunning(running))
+    while (daemon==1?1:shoudStopRunning(running))
     {
         int accept_connection;
         Client client = connectToClient(&accept_connection);
@@ -74,44 +74,45 @@ void handle_threading(int use_jail)
     thread_manager_terminate_threads();
 }
 
-void handle_fork(int use_jail)
+void handler(int sig_nr)
 {
-    pid_t origin;
-    pid_t p;
-    signal(SIGCHLD, SIG_IGN);
-    p = fork();
-    if (p != 0)
+    if (sig_nr == SIGUSR1)
     {
-        origin = getpid();
+        printf("SIGUSR1 to %d\n", getpid());
+        request_stop_reciving_data = 1;
     }
+}
+
+void handle_fork(int use_jail, int daemon)
+{
+    signal(SIGCHLD, SIG_IGN);
+    
     int running = 1;
-    while (shoudStopRunning(running))
+    while (daemon==1?1:shoudStopRunning(running))
     {
-        if (p != origin)
+        int accept_connection;
+        Client client = connectToClient(&accept_connection);
+        if (accept_connection == 1)
         {
-            int accept_connection;
-            Client client = connectToClient(&accept_connection);
-            if (accept_connection == 1)
+            pid_t p_two;
+            p_two = fork();
+            if (p_two == 0)
             {
-                pid_t p_two;
-                p_two = fork();
-                if (p_two == 0)
-                {
-                    Thread_args *args = malloc(sizeof(Thread_args));
-                    args->client = client;
-                    args->use_jail = use_jail;
-                    args->is_fork == 1;
-                    client_function((void *)args);
-                    free(args);
-                    exit(0);
-                }
+                signal(SIGUSR1, handler);
+
+                Thread_args *args = malloc(sizeof(Thread_args));
+                args->client = client;
+                args->use_jail = use_jail;
+                args->is_fork == 1;
+                args->id = getpid();
+                client_function((void *)args);
+                free(args);
+                exit(0);
             }
         }
     }
-    signal(SIGQUIT, SIG_IGN);
-    kill(0, SIGQUIT);
-
-    request_stop_reciving_data = 1;
+    signal(SIGUSR1, SIG_IGN);
+    kill(0, SIGUSR1);
 }
 
 void create_a_deamon(char *document_root_path)
@@ -121,26 +122,43 @@ void create_a_deamon(char *document_root_path)
     struct rlimit rl;
     
     umask(0);
-    getrlimit(RLIMIT_NOFILE, &rl);
+    if (getrlimit(RLIMIT_NOFILE, &rl) < 0)
+    {
+        fprintf(stderr, "Error: getrlimit\n");
+        free_configurations();
+        exit(1);
+    }
 
     pid = fork();
     if (pid != 0)
     {
+        free_configurations();
         exit(0);
     }
     setsid();
-    signal(SIGHUP, SIG_IGN);
+    if(signal(SIGHUP, SIG_IGN) < 0)
+    {
+        fprintf(stderr, "Error: sigaction\n");
+        free_configurations();
+        exit(1);
+    }
     pid = fork();
     if (pid != 0)
     {
+        free_configurations();
         exit(0);
     }
-    chdir(document_root_path);
+    if (chdir(document_root_path))
+    {
+        fprintf(stderr, "Error: chdir\n");
+        free_configurations();
+        exit(1);
+    }
     if (rl.rlim_max == RLIM_INFINITY)
     {
         rl.rlim_max = 1024;
     }
-
+    printf("PID: %d\n", getpid());
     for (int i = 0; i < rl.rlim_max; i++)
     {
         close(i);
@@ -153,6 +171,13 @@ void create_a_deamon(char *document_root_path)
 
 void start_server(char *document_root_path, int port, int log, int deamon, int setting, int use_jail)
 {
+    logging_get_path();
+
+    if (deamon == 1)
+    {
+        create_a_deamon(document_root_path);
+    }
+
     // Open log files before using chroot
     logging_open(log);
 
@@ -172,19 +197,11 @@ void start_server(char *document_root_path, int port, int log, int deamon, int s
 
     if (setting == 1)
     {
-        if (deamon == 1)
-        {
-            create_a_deamon(document_root_path);
-        }
-        handle_fork(use_jail);
+        handle_fork(use_jail, deamon);
     }
     else if (setting == 0)
     {
-        if (deamon == 1)
-        {
-            create_a_deamon(document_root_path);
-        }
-        handle_threading(use_jail);
+        handle_threading(use_jail, deamon);
     }
 
     closeServer();

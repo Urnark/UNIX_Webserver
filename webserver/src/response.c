@@ -43,8 +43,23 @@ MyFile* define_content(Request_t* request)
 
 void add_log(HTTP_HEAD* response_head, Request_t* request, int size)
 {
-    request->headers.method[strlen(request->headers.method) - 1] = '\0';
-    logging_log(response_head->client_ip, "-", response_head->server_time, request->headers.method, request->response_code, size);
+    if (request->response_code != 408 && request->response_code != 500 && request->response_code != 503)
+    {
+        request->headers.method[strlen(request->headers.method) - 1] = '\0';
+        if (request->response_code == 200)
+        {
+            logging_log(response_head->client_ip, "-", response_head->server_time, request->headers.method, request->response_code, size);
+        }
+        else
+        {
+            logging_log_err(response_head->client_ip, "-", response_head->server_time, request->headers.method, request->response_code, size);
+        }
+            
+    }
+    else
+    {
+        logging_log_err(response_head->client_ip, "-", response_head->server_time, "-", request->response_code, size);
+    }
 }
 
 int send_response(Client *client, char *response, int response_size)
@@ -247,6 +262,11 @@ int gather_response_information(Request_t* request, Client *client)
                         response_head.code_notice="Not Found";
                         build_response(response_head, request, client, 0, 1);
                         break;
+                    case 408:
+                        response_head.code="408";
+                        response_head.code_notice="Request Timeout";
+                        build_response(response_head, request, client, 0, 1);
+                        break;
                     case 500:
                         response_head.code="500";
                         response_head.code_notice="Internal Server Error";
@@ -255,6 +275,11 @@ int gather_response_information(Request_t* request, Client *client)
                     case 501:
                         response_head.code="501";
                         response_head.code_notice="Not Implemented";
+                        build_response(response_head, request, client, 0, 1);
+                        break;
+                    case 503:
+                        response_head.code="503";
+                        response_head.code_notice="Service Unavailable";
                         build_response(response_head, request, client, 0, 1);
                         break;
                 }
