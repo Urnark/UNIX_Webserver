@@ -1530,3 +1530,23 @@
 192.168.10.189 - - Tue, 08 Oct 2019 13:04:24 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
 192.168.10.189 - - Tue, 08 Oct 2019 13:04:24 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
 192.168.10.189 - - Tue, 08 Oct 2019 13:04:24 GMT "GET /images/deck.png HTTP/1.1" 200 220275
+3 32 16 2 tv 96 128 8 read_fds 256 4096 6 buffer  - - Wed, 09 Oct 2019 17:06:56 GMT "GET /" 200 1144
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:52 GMT "GET / HTTP/1.1" 200 1144
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:52 GMT "GET /style.css HTTP/1.1" 200 1274
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:52 GMT "GET /images/diamond_7.png HTTP/1.1" 200 33702
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:52 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:52 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:52 GMT "GET /images/deck.png HTTP/1.1" 200 220275
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:54 GMT "GET /deep_one/new_card_one.html HTTP/1.1" 200 1251
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:54 GMT "GET /style.css HTTP/1.1" 200 1274
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:54 GMT "GET /images/diamond_7.png HTTP/1.1" 200 33702
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:54 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:54 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:54 GMT "GET /images/caro_8.png HTTP/1.1" 200 3711
+127.0.0.1 - - Wed, 09 Oct 2019 17:15:54 GMT "GET /images/deck.png HTTP/1.1" 200 220275
+127.0.0.1 - - Wed, 09 Oct 2019 17:16:38 GMT "GET / HTTP/1.1" 200 1144
+127.0.0.1 - - Wed, 09 Oct 2019 17:16:38 GMT "GET /style.css HTTP/1.1" 200 1274
+127.0.0.1 - - Wed, 09 Oct 2019 17:16:38 GMT "GET /images/diamond_7.png HTTP/1.1" 200 33702
+127.0.0.1 - - Wed, 09 Oct 2019 17:16:38 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
+127.0.0.1 - - Wed, 09 Oct 2019 17:16:38 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
+127.0.0.1 - - Wed, 09 Oct 2019 17:16:38 GMT "GET /images/deck.png HTTP/1.1" 200 220275

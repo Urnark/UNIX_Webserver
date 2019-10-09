@@ -45,16 +45,43 @@ void add_log(HTTP_HEAD* response_head, Request_t* request, int size)
 {
     if (request->response_code != 408 && request->response_code != 500 && request->response_code != 503)
     {
-        request->headers.method[strlen(request->headers.method) - 1] = '\0';
-        if (request->response_code == 200)
+        char* str = NULL;
+        if (request->headers.method != NULL)
         {
-            logging_log(response_head->client_ip, "-", response_head->server_time, request->headers.method, request->response_code, size);
+            if (strlen(request->headers.method) >= 1)
+            {
+                request->headers.method[strlen(request->headers.method) - 1] = '\0';
+                str = request->headers.method;
+            }
+            else
+            {
+                str = malloc(strlen("-") + 1);
+                strcpy(str, "-");
+            }
         }
         else
         {
-            logging_log_err(response_head->client_ip, "-", response_head->server_time, request->headers.method, request->response_code, size);
+            str = malloc(strlen("-") + 1);
+            strcpy(str, "-");
         }
-            
+    
+        if (request->response_code == 200)
+        {
+            logging_log(response_head->client_ip, "-", response_head->server_time, str, request->response_code, size);
+        }
+        else
+        {
+            logging_log_err(response_head->client_ip, "-", response_head->server_time, str, request->response_code, size);
+        }
+        
+        if (request->headers.method == NULL)
+        {
+            free(str);
+        }
+        else if (strlen(request->headers.method) < 1)
+        {
+            free(str);
+        }
     }
     else
     {
@@ -192,7 +219,10 @@ int gather_response_information(Request_t* request, Client *client)
 
     if(request->http_version == HTTP_0_9)
     {
-        build_response(response_head, request, client, 1, 0);
+        if (request->response_code == 200)
+        {
+            build_response(response_head, request, client, 1, 0);
+        }
     }
     else if(request->http_version == HTTP_1_0 || request->http_version == HTTP_1_1 || request->http_version == HTTP_none)
     {

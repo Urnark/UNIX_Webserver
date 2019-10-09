@@ -228,6 +228,18 @@ void _add_get_head_on_method(char* first_word, Request_t* request_ret)
     free(temp);
 }
 
+int string_length_check(char* request)
+{
+    for (int i = 0; i < PATH_MAX; i++)
+    {
+        if (request[i] == '\0')
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 Request_t _process_request(char* request, int use_jail)
 {
     Request_t request_ret;
@@ -235,6 +247,13 @@ Request_t _process_request(char* request, int use_jail)
     request_ret.type = RT_NONE;
     request_ret.response_code = 200;
     _init_headers(&request_ret.headers);
+
+    if (string_length_check(request))
+    {
+        printf("400 Bad Request\n");
+        request_ret.response_code = 400;
+        return request_ret;
+    }
 
     if (strlen(request) < 3)
     {
@@ -270,7 +289,6 @@ Request_t _process_request(char* request, int use_jail)
         first_word = request;
         if (_check_method(&request_ret, get_head_none, first_word))
         {
-            _add_get_head_on_method(first_word, &request_ret);
             return request_ret;
         }
         if (_check_http_version(&request_ret, request_ret.headers.method))
