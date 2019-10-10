@@ -21,6 +21,7 @@ typedef struct _head
     int content_size;
     char *connection_type;
     char *client_ip;
+    char* failure_response;
 }HTTP_HEAD;
 
 typedef struct _file
@@ -29,11 +30,13 @@ typedef struct _file
     int length;
 } MyFile;
 
-
+void free_error_page();
+void read_error_page(char* document_root_path);
+MyFile* fill_error_page(HTTP_HEAD* response_head);
 int response_malloc_head(HTTP_HEAD response_head);
 int response_free_head(HTTP_HEAD respnse_head);
 char* get_server_time(char* time_string);
-MyFile* define_content(Request_t* request);
+MyFile* define_content(Request_t* request, int allocated_memory);
 void add_log(HTTP_HEAD* response_head, Request_t* request, int size);
 int send_response(Client *client, char *response, int response_size);
 int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, int head_true, int content_true);

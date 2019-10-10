@@ -172,6 +172,7 @@ void create_a_deamon(char *document_root_path)
 void start_server(char *document_root_path, int port, int log, int deamon, int setting, int use_jail)
 {
     logging_get_path();
+    read_error_page(document_root_path);
 
     if (deamon == 1)
     {
@@ -207,6 +208,7 @@ void start_server(char *document_root_path, int port, int log, int deamon, int s
     closeServer();
 
     logging_close();
+    free_error_page();
 }
 
 void change_chroot(char *document_root_path)

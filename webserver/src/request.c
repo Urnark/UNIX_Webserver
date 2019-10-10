@@ -191,6 +191,16 @@ int _check_uri(Request_t* request, char* method, int use_jail)
             }
             else
             {
+                char temp[PATH_MAX];
+                strcpy(temp, path_www_folder);
+                strcat(temp, "/error.html");
+                if (strcmp(temp, path) == 0)
+                {
+                    printf("403 Forbidden\n");
+                    request->response_code = 403;
+                    return 1;
+                }
+
                 if (strcmp(path_www_folder, path) == 0)
                 {
                     strcat(path, "/index.html");

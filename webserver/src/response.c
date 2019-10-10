@@ -2,14 +2,7 @@
 #include <math.h>
 #include "../include/logging.h"
 
-char* get_server_time(char* time_string)
-{
-    time_string = malloc(256);
-    time_t rawtime = time(NULL);
-    struct tm *ptm = gmtime(&rawtime);
-    strftime(time_string, 256, "%a, %d %b %Y %T %Z", ptm);
-    return time_string;
-}
+MyFile* error_page;
 
 int define_content_size(Request_t* request)
 {
@@ -22,7 +15,64 @@ int define_content_size(Request_t* request)
         return size;
 }
 
-MyFile* define_content(Request_t* request)
+void free_error_page()
+{
+    free(error_page->file_content);
+    free(error_page);
+}
+
+void read_error_page(char* document_root_path)
+{
+    char error_html[] = "/error.html";
+
+    Request_t re;
+    strcpy(re.path, document_root_path);
+    strcat(re.path, error_html);
+
+    int length = define_content_size(&re);
+    error_page = define_content(&re, length);
+}
+
+void fill_word(char* cpy_page, const char* word, char* to)
+{
+    char* ptr = strstr(cpy_page, word);
+    while(ptr != NULL)
+    {
+        char* temp = malloc(strlen(ptr) + 1);
+        strcpy(temp, ptr);
+        strcpy(ptr, to);
+        strcat(cpy_page, temp + strlen(word));
+        free(temp);
+
+        ptr = strstr(ptr, word);
+    }
+}
+
+MyFile* fill_error_page(HTTP_HEAD* response_head)
+{
+    MyFile* file = malloc(sizeof(MyFile));
+    file->file_content = malloc(error_page->length + 4000);
+    strcpy(file->file_content, error_page->file_content);
+
+    fill_word(file->file_content, "E_C", response_head->code);
+    fill_word(file->file_content, "E_T", response_head->code_notice);
+    fill_word(file->file_content, "E_S", response_head->failure_response);
+
+    file->length = strlen(file->file_content);
+
+    return file;
+}
+
+char* get_server_time(char* time_string)
+{
+    time_string = malloc(256);
+    time_t rawtime = time(NULL);
+    struct tm *ptm = gmtime(&rawtime);
+    strftime(time_string, 256, "%a, %d %b %Y %T %Z", ptm);
+    return time_string;
+}
+
+MyFile* define_content(Request_t* request, int allocated_memory)
 {
     MyFile* file = malloc(sizeof(MyFile));
     FILE * f = fopen(request->path, "rb");
@@ -30,7 +80,7 @@ MyFile* define_content(Request_t* request)
     if (f)
     {
         file->length = define_content_size(request);
-        file->file_content = malloc(file->length + 1);
+        file->file_content = malloc((allocated_memory==-1?file->length + 1:allocated_memory + 1));
         if (file->file_content)
         {
             fread(file->file_content, 1, file->length, f);
@@ -105,8 +155,18 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
 {
     if(head_true == 0 && content_true == 0)
     {
-        response_head.content_size = define_content_size(request);
-        MyFile* file = define_content(request);
+        response_head.content_size;
+        MyFile* file;
+        if (request->response_code == 200)
+        {
+            response_head.content_size = define_content_size(request);
+            file = define_content(request, -1);
+        }
+        else
+        {
+            file = fill_error_page(&response_head);
+            response_head.content_size = file->length;
+        }
 
         response_head.server_time = get_server_time(response_head.server_time);
 
@@ -199,7 +259,7 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
         response_head.server_time = get_server_time(response_head.server_time);
 
         char *content = malloc(response_head.content_size);
-        MyFile* file = define_content(request);
+        MyFile* file = define_content(request, -1);
         memcpy(content,file->file_content,file->length);
 
         if (send_response(client, content, response_head.content_size))
@@ -252,6 +312,12 @@ int gather_response_information(Request_t* request, Client *client)
             response_head.connection_type="closed";
         }
 
+        int check_content = 0;
+        if (request->type == RT_HEAD)
+        {
+            check_content = 1;
+        }
+
         switch (request->response_code)
                 {
                     case 200:
@@ -280,37 +346,44 @@ int gather_response_information(Request_t* request, Client *client)
                     case 400:
                         response_head.code="400";
                         response_head.code_notice="Bad Request";
-                        build_response(response_head, request, client, 0, 1);
+                        response_head.failure_response="The server won't respond. Your client has send a malfunctionous request.";
+                        build_response(response_head, request, client, 0, check_content);
                         break;
                     case 403:
                         response_head.code="403";
                         response_head.code_notice="Forbidden";
-                        build_response(response_head, request, client, 0, 1);
+                        response_head.failure_response="You have not the permission to access this side on the server. Please contact the server administration.";
+                        build_response(response_head, request, client, 0, check_content);
                         break;
                     case 404:
                         response_head.code="404";
                         response_head.code_notice="Not Found";
-                        build_response(response_head, request, client, 0, 1);
+                        response_head.failure_response="The requested URL was not found on this server. We are sorry.";
+                        build_response(response_head, request, client, 0, check_content);
                         break;
                     case 408:
                         response_head.code="408";
                         response_head.code_notice="Request Timeout";
-                        build_response(response_head, request, client, 0, 1);
+                        response_head.failure_response="The server decided not to wait any longer for you to make a request. Good night!";
+                        build_response(response_head, request, client, 0, check_content);
                         break;
                     case 500:
                         response_head.code="500";
                         response_head.code_notice="Internal Server Error";
-                        build_response(response_head, request, client, 0, 1);
+                        response_head.failure_response="The server is not able to answer at the moment. It seems to be lost in his thoughts...";
+                        build_response(response_head, request, client, 0, check_content);
                         break;
                     case 501:
                         response_head.code="501";
                         response_head.code_notice="Not Implemented";
-                        build_response(response_head, request, client, 0, 1);
+                        response_head.failure_response="The server is not able to answer this kind of request.";
+                        build_response(response_head, request, client, 0, check_content);
                         break;
                     case 503:
                         response_head.code="503";
                         response_head.code_notice="Service Unavailable";
-                        build_response(response_head, request, client, 0, 1);
+                        response_head.failure_response="The service is unavailable.";
+                        build_response(response_head, request, client, 0, check_content);
                         break;
                 }
         
