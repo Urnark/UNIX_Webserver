@@ -1,0 +1,25 @@
+body {
+	background-color: lightgrey;
+	min-width: 800px;
+}
+
+.card {
+	height: 200px;
+	width: 140px;
+}
+
+#picture {
+	text-align: center;
+}
+
+#failure_occured {
+	text-align: center;
+	color: #408080;
+	font-size: 18px;
+}
+
+#information {
+	text-align: center;
+	color: #408080;
+	font-size: 14px;
+}
