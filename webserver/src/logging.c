@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <linux/limits.h>
+#include <unistd.h>
 
 char* LOGGING_PATH_LOG_FILE = NULL;
 char* LOGGING_PATH_LOG_ERR_FILE = NULL;
@@ -97,7 +98,7 @@ void _logging_log(int pri, char* ip, char* userid, char* time, char* request, in
     else
     {
         if (referer == NULL)
-            syslog(pri, "%s - %s %s \"%s\" %d %s %s %s", ip, (userid != NULL?userid:"-"), 
+            syslog(pri, "%s - %s %s \"%s\" %d %s", ip, (userid != NULL?userid:"-"), 
                 time, r, response_code, (size_in_bytes != 0?size:"-"));
         else
             syslog(pri, "%s - %s %s \"%s\" %d %s \"%s\" \"%s\"", ip, (userid != NULL?userid:"-"), 

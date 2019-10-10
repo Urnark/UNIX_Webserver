@@ -35,13 +35,14 @@ void thread_manager_terminate_threads()
 {
 	pthread_mutex_destroy(&_thread_manager_thread_mutex);
 
-	for (int i = 0; i < _thread_manager_array.size; i++)
+	int i;
+	for (i = 0; i < _thread_manager_array.size; i++)
 	{
 		pthread_join(((_thread_manager_Thread_info*)array_get(&_thread_manager_array, i))->thread, NULL);
 	}
 
 	// Because the Thread_info is allocated on the heap, free needs to be called
-	for (int i = 0; i < _thread_manager_array.size; i++)
+	for (i = 0; i < _thread_manager_array.size; i++)
     {
         free(array_get(&_thread_manager_array, i));
     }
@@ -54,7 +55,8 @@ void thread_manager_exit_thread(void* args)
 	int thread_id = *(int*)args;
 	pthread_mutex_lock(&_thread_manager_thread_mutex);
 
-	for (int i = 0; i < _thread_manager_array.size; i++)
+	int i;
+	for (i = 0; i < _thread_manager_array.size; i++)
 	{
 		if (((_thread_manager_Thread_info*)array_get(&_thread_manager_array, i))->id == thread_id)
 		{

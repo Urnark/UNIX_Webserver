@@ -1550,3 +1550,9 @@
 127.0.0.1 - - Wed, 09 Oct 2019 17:16:38 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
 127.0.0.1 - - Wed, 09 Oct 2019 17:16:38 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
 127.0.0.1 - - Wed, 09 Oct 2019 17:16:38 GMT "GET /images/deck.png HTTP/1.1" 200 220275
+127.0.0.1 - - Thu, 10 Oct 2019 16:09:32 GMT "GET / HTTP/1.1" 200 1144
+127.0.0.1 - - Thu, 10 Oct 2019 16:09:32 GMT "GET /style.css HTTP/1.1" 200 1274
+127.0.0.1 - - Thu, 10 Oct 2019 16:09:32 GMT "GET /images/diamond_7.png HTTP/1.1" 200 33702
+127.0.0.1 - - Thu, 10 Oct 2019 16:09:32 GMT "GET /images/spade_A.png HTTP/1.1" 200 47635
+127.0.0.1 - - Thu, 10 Oct 2019 16:09:32 GMT "GET /images/club_3.png HTTP/1.1" 200 37187
+127.0.0.1 - - Thu, 10 Oct 2019 16:09:32 GMT "GET /images/deck.png HTTP/1.1" 200 220275

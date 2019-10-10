@@ -134,7 +134,8 @@ int main(int argc, char const *argv[])
 			}
 			else if (argv[number_arguments][0] == '-')
 			{
-				for (int i = 1; i < strlen(argv[number_arguments]); i++)
+				int i;
+				for (i = 1; i < strlen(argv[number_arguments]); i++)
 				{
 					switch (argv[number_arguments][i])
 					{

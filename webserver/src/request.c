@@ -79,7 +79,8 @@ int _check_method(Request_t* request, Request_type rt, char* first_word)
     if (rt == RT_NONE)
     {
         char methods[][7] = {"OPTIONS", "POST", "PUT", "DELETE", "TRACE", "CONNECT"};
-        for (int i = 0; i < 6; i++)
+        int i;
+        for (i = 0; i < 6; i++)
         {
             if (strcmp(methods[i], first_word) == 0)
             {
@@ -240,7 +241,8 @@ void _add_get_head_on_method(char* first_word, Request_t* request_ret)
 
 int string_length_check(char* request)
 {
-    for (int i = 0; i < PATH_MAX; i++)
+    int i;
+    for (i = 0; i < PATH_MAX; i++)
     {
         if (request[i] == '\0')
         {

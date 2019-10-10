@@ -159,7 +159,8 @@ void create_a_deamon(char *document_root_path)
         rl.rlim_max = 1024;
     }
     printf("PID: %d\n", getpid());
-    for (int i = 0; i < rl.rlim_max; i++)
+    int i;
+    for (i = 0; i < rl.rlim_max; i++)
     {
         close(i);
     }
@@ -171,6 +172,8 @@ void create_a_deamon(char *document_root_path)
 
 void start_server(char *document_root_path, int port, int log, int deamon, int setting, int use_jail)
 {
+    check_www_path();
+
     logging_get_path();
     read_error_page(document_root_path);
 
@@ -206,9 +209,9 @@ void start_server(char *document_root_path, int port, int log, int deamon, int s
     }
 
     closeServer();
-
-    logging_close();
+    
     free_error_page();
+    logging_close();
 }
 
 void change_chroot(char *document_root_path)

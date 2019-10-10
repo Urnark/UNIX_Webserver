@@ -12,6 +12,7 @@ typedef struct _config_data
 // For jail
 ServerConfig server_configurations;
 void init_configurations();
+void check_www_path();
 void free_configurations();
 
 void read_config_file(char* data, ServerConfig* sc);

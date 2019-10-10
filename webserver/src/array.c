@@ -63,7 +63,8 @@ void array_push_element(Array* array, void* value)
  * */
 void array_remove_element(Array* array, size_t index)
 {
-    for (size_t i = index + 1; i < array->size; i++)
+    size_t i;
+    for (i = index + 1; i < array->size; i++)
     {
         array->arr[i - 1].element = array->arr[i].element;
     }

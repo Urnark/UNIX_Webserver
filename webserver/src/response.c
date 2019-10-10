@@ -336,9 +336,8 @@ int gather_response_information(Request_t* request, Client *client)
                             {
                                 response_head.content_type="image/png";
                             }
-                            
-                            build_response(response_head, request, client, 0, 0);
 
+                            build_response(response_head, request, client, 0, 0);
                         }else{
                             build_response(response_head, request, client, 0, 1);
                         }

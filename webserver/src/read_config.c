@@ -35,6 +35,21 @@ void init_configurations()
     }
 }
 
+void check_www_path()
+{
+    char* path = realpath(server_configurations.document_root_path, NULL);
+    if (path == NULL)
+    {
+        fprintf(stderr, "ERROR: The path [%s] in the configuration file is invalid.\nRun with -r to repair the configuration file.\n", server_configurations.document_root_path);
+        free_configurations();
+        exit(-1);
+    }
+    else
+    {
+        free(path);
+    }
+}
+
 void free_configurations()
 {
     free(server_configurations.config_data);
@@ -45,7 +60,8 @@ void read_config_file(char* data, ServerConfig* sc)
 {
     char* ptr = strstr(server_configurations.config_data, data);
     int length = 0;
-    for(char* ptr_2 = ptr; *ptr_2 != '\n'; ++ptr_2, length++) {};
+    char* ptr_2;
+    for(ptr_2 = ptr; *ptr_2 != '\n'; ++ptr_2, length++) {};
     if (ptr != NULL)
     {
         sc->config_data = malloc(length + 1);
