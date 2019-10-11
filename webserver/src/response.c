@@ -1,6 +1,7 @@
 #include "../include/response.h"
 #include <math.h>
 #include "../include/logging.h"
+#include <errno.h>
 
 MyFile* error_page;
 
@@ -12,6 +13,7 @@ int define_content_size(Request_t* request)
         fseek(f, 0L, SEEK_END);
         size = ftell(f);
         fseek(f, pointer, SEEK_SET);
+        fclose(f);
         return size;
 }
 

@@ -1,4 +1,4 @@
-SERVER_DOCUMENT_ROOT=/home/seclab/Documents/shared/Assignment 2/UNIX_Webserver/www
+SERVER_DOCUMENT_ROOT=/home/urnark/Documents/shared/Assignment 2/UNIX_Webserver/www
 SERVER_NAME=Card_Server
 SERVER_VERSION=0.2
 SERVER_PORT=4444

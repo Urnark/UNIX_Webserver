@@ -13,8 +13,8 @@ void *client_function(void *args)
     gather_response_information(&request, client);
     free_headers(&request.headers);
 
-    //close(client->socket);
-    shutdown(client->socket, SHUT_WR);
+    shutdown(client->socket, SHUT_RDWR);
+    close(client->socket);
     if (is_fork == 0)
     {
         thread_manager_exit_thread(args);
@@ -194,7 +194,7 @@ void start_server(char *document_root_path, int port, int log, int deamon, int s
     set_ip_type(0);
     set_port(port);
     set_protocol(0);
-    createSocket(10);
+    createSocket(1000);
     setToNonBlocking();
 
     request_init(document_root_path, use_jail);
@@ -225,6 +225,9 @@ void change_chroot(char *document_root_path)
         exit(EXIT_FAILURE);
     }
 
+    // Get the UID of the uid and gui of the user that started the server.
+    struct passwd* pwd = getpwnam(getlogin());
+
     chdir(document_root_path);
     if (chroot(document_root_path) == -1)
     {
@@ -237,15 +240,6 @@ void change_chroot(char *document_root_path)
         fprintf(stderr, "Error: in chroot.\n");
     }
 
-    gid_t orig_gid = getgid();
-    uid_t orig_uid = getuid();
-
-    setregid(-1, orig_gid);
-    setreuid(-1, orig_uid);
-
-    if ((getegid() != orig_gid) || (geteuid() != orig_uid))
-    {
-        fprintf(stderr, "Error: Failed to drop privileges, aborting\n");
-        exit(EXIT_FAILURE);
-    }
+    //setregid(pwd->pw_gid, pwd->pw_gid);
+    //setreuid(pwd->pw_uid, pwd->pw_uid);
 }

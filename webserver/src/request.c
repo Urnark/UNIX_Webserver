@@ -158,6 +158,7 @@ int _check_uri(Request_t* request, char* method, int use_jail)
         request->response_code = 400;
         return 1;
     }
+    
     strncat(uri, method, n);
     if (request->http_version == HTTP_0_9)
         uri[strlen(uri) - 1] = '\0';
@@ -179,14 +180,18 @@ int _check_uri(Request_t* request, char* method, int use_jail)
     printf("%s\n", uri);
 
     // Check uri
-    char path[PATH_MAX];
-    char *real_uri = realpath(uri, path);
+    char *real_uri = uri;
+    if (!use_jail)
+    {
+        real_uri = realpath(uri, NULL);
+    }
+    
     if (real_uri) {
-        if (strlen(path) >= strlen(path_www_folder))
+        if (strlen(real_uri) >= strlen(path_www_folder))
         {
-            if (strncmp(path_www_folder, path, strlen(path_www_folder)) != 0)
+            if (strncmp(path_www_folder, real_uri, strlen(path_www_folder)) != 0)
             {
-                printf("403 Forbidden\n");
+                printf("403 Forbidden1\n");
                 request->response_code = 403;
                 return 1;
             }
@@ -195,26 +200,37 @@ int _check_uri(Request_t* request, char* method, int use_jail)
                 char temp[PATH_MAX];
                 strcpy(temp, path_www_folder);
                 strcat(temp, "/error.html");
-                if (strcmp(temp, path) == 0)
+                if (strcmp(temp, real_uri) == 0)
                 {
-                    printf("403 Forbidden\n");
+                    printf("403 Forbidden2\n");
                     request->response_code = 403;
                     return 1;
                 }
 
-                if (strcmp(path_www_folder, path) == 0)
+                if (strcmp(path_www_folder, real_uri) == 0)
                 {
-                    strcat(path, "/index.html");
+                    strcat(real_uri, "/index.html");
                     strcpy(request->path, real_uri);
-                    return 0;
                 }
-                strcpy(request->path, real_uri);
+                else
+                {
+                    strcpy(request->path, real_uri);
+                }
+                if (use_jail)
+                {
+                    int i;
+                    for (i = 0; i < strlen(request->path) - 1; i++)
+                    {
+                        request->path[i] = request->path[i + 1];
+                    }
+                    request->path[strlen(request->path) - 1] = '\0';
+                }
                 return 0;
             }
         }
         else
         {
-            printf("403 Forbidden\n");
+            printf("403 Forbidden3\n");
             request->response_code = 403;
             return 1;
         }

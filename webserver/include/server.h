@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/resource.h>
+#include <pwd.h>
 
 #include "../include/threadManager.h"
 #include "../include/socket.h"
