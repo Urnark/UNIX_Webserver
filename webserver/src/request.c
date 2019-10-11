@@ -180,10 +180,11 @@ int _check_uri(Request_t* request, char* method, int use_jail)
     printf("%s\n", uri);
 
     // Check uri
+    char path[PATH_MAX];
     char *real_uri = uri;
     if (!use_jail)
     {
-        real_uri = realpath(uri, NULL);
+        real_uri = realpath(uri, path);
     }
     
     if (real_uri) {
