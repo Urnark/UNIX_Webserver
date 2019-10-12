@@ -3,8 +3,11 @@
 #include <linux/limits.h>
 #include <unistd.h>
 
-const char FILENAME[] = ".lab2-config";
+const char FILENAME[] = ".lab3-config";
 
+/**
+ * Opens the configuration-file and saves the information for later usage.
+ * */
 void init_configurations()
 {
     server_configurations.document_root_path = NULL;
@@ -35,6 +38,9 @@ void init_configurations()
     }
 }
 
+/**
+ * Checks if the path to the www-folder/ source-folder for the webpages is valid.
+ * */
 void check_www_path()
 {
     char* path = realpath(server_configurations.document_root_path, NULL);
@@ -50,12 +56,21 @@ void check_www_path()
     }
 }
 
+/**
+ * Deallocates the memory used for the data of the configuration file.
+ * */
 void free_configurations()
 {
     free(server_configurations.config_data);
     free(server_configurations.document_root_path);
 }
 
+/**
+ * Searches for a given information in the saved configuration-file.
+ * 
+ * data: string to compare with the information from the configuration file.
+ * sc: variable with the content of the configuration file.
+ * */
 void read_config_file(char* data, ServerConfig* sc)
 {
     char* ptr = strstr(server_configurations.config_data, data);
@@ -70,9 +85,13 @@ void read_config_file(char* data, ServerConfig* sc)
     }
 }
 
+/**
+ * Repaires the configuration-file or creates a new one, if none exists.
+ * */
 int repair_config_file(){
     int status;
     status = remove(FILENAME);
+    //Repaires the configuration-file
     if (status == 0){
         status = create_config_file();
         if (status)
@@ -83,6 +102,7 @@ int repair_config_file(){
             return 0;
         }
     }
+    //Creates a new configuration-file
     else if (status==-1)
     {
         status = create_config_file();
@@ -97,6 +117,9 @@ int repair_config_file(){
     return 1;
 }
 
+/**
+ * Creates a new configuration-file with the default values of the server.
+ * */
 int create_config_file(){
     FILE* f = fopen(FILENAME , "w");
 

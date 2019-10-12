@@ -3,14 +3,21 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <string.h>
+#include <read_config.h>
 
+/**
+ * Prints out an error and quits the program.
+ * */
 void error(char * message)
 {
     perror(message);
+    free_configuration();
     exit(1);
 }
 
-//Sets the protocoll to either TCP (SOCK_STREAM) or UDP(SOCK_DGRAM)
+/**
+ * Sets the protocoll to either TCP (SOCK_STREAM) or UDP(SOCK_DGRAM)
+ * */
 int set_protocol (int i)
 {
     if(i == 0){
@@ -23,7 +30,9 @@ int set_protocol (int i)
     return(0);
 }
 
-//Sets the type either to IPv4(AF_INET) or IPv6(AF_INET)
+/**
+ * Sets the type either to IPv4(AF_INET) or IPv6(AF_INET)
+ * */
 int set_ip_type (int i)
 {
     if(i == 0){
@@ -36,7 +45,9 @@ int set_ip_type (int i)
     return(0);
 }
 
-//Sets the portnumber
+/**
+ * Sets the portnumber
+ * */
 int set_port (int i)
 {
     if(( 0 < i) && (i < 65535)){
@@ -47,7 +58,11 @@ int set_port (int i)
     return(0);
 }
 
-//Creates the server_socket and bind it to the port to listen.
+/**
+ * Creates the server_socket and bind it to the port to listen.
+ * 
+ * queuelength: Determents the length of the queue of clients to wait.
+ * */
 int createSocket (int queuelength)
 {
     if((server_socket = socket(ip_type, protocol_type, 0)) < 0){
@@ -82,11 +97,13 @@ int createSocket (int queuelength)
     // Save socket flags
     server_socket_opt = fcntl(server_socket, F_GETFL, NULL);
 
-    printf("Successfully created Server_Socket\n");  // delete if not needed.
+    //printf("Successfully created Server_Socket\n");
     return 0;
 }
 
-//accept a client.
+/**
+ * Accepts the client to the server.
+ * */
 Client connectToClient(int* accept_connection)
 {
     Client client;
@@ -102,23 +119,32 @@ Client connectToClient(int* accept_connection)
     else
     {
         *accept_connection = 1;
-        printf("Successfully connected.\n");  // delete if not needed.
+        //printf("Successfully connected.\n");
     }
 
     return client;
 }
 
+/**
+ * Closes the socked fd.
+ * */
 void closeServer()
 {
     resetFlags();
     close(server_socket);
 }
 
+/**
+ * Sets the server to none blocking.
+ * */
 void setToNonBlocking()
 {
     fcntl (server_socket, F_SETFL, server_socket_opt | O_NONBLOCK);
 }
 
+/**
+ * Resets the server flags.
+ * */
 void resetFlags()
 {
     fcntl (server_socket, F_SETFL, server_socket_opt);

@@ -1,5 +1,11 @@
 #include "../include/server.h"
 
+/**
+ * Function which handles the actual request and response for a conected client
+ * for all request methods implemented.
+ * 
+ * args: holds information about the connected client and the id of the handler.
+ * */
 void *client_function(void *args)
 {
     int thread_id = ((Thread_args *)args)->id;
@@ -7,7 +13,7 @@ void *client_function(void *args)
     int use_jail = ((Thread_args *)args)->use_jail;
     int is_fork = ((Thread_args *)args)->is_fork;
 
-    printf("\n%d: Start Connection!\n", ((Thread_args *)args)->id);
+    //printf("\n%d: Start Connection!\n", ((Thread_args *)args)->id);
 
     Request_t request = request_received(client, use_jail);
     gather_response_information(&request, client);
@@ -21,6 +27,12 @@ void *client_function(void *args)
     }
 }
 
+/**
+ * Stops the server from running and quit it properly. 
+ * Only if not run as a deamon.
+ * 
+ * running: true or false.
+ * */
 int shoudStopRunning(int running)
 {
     // For checking if the server should be terminated.
@@ -47,6 +59,15 @@ int shoudStopRunning(int running)
     return 1;
 }
 
+/**
+ * Handler of the thread-request-method. 
+ * Connects to a client and creates a new thread for handling the request and response.
+ * Terminates the thread after it is done or sends a kill command,
+ * if the server has to stop running.
+ * 
+ * use_jail: if jail is true or false.
+ * deamon: if deamon is true or false.
+ * */
 void handle_threading(int use_jail, int daemon)
 {
     thread_manager_init_threads(START_NUM_THREADS);
@@ -74,15 +95,27 @@ void handle_threading(int use_jail, int daemon)
     thread_manager_terminate_threads();
 }
 
+/**
+ * signal handler to force children to stop handling a request and kill themselves.
+ * */
 void handler(int sig_nr)
 {
     if (sig_nr == SIGUSR1)
     {
-        printf("SIGUSR1 to %d\n", getpid());
+        //printf("SIGUSR1 to %d\n", getpid());
         request_stop_reciving_data = 1;
     }
 }
 
+/**
+ * Handler of the fork-request-method.
+ * Connects to a client and executes fork. 
+ * The child will handle the request and response properly,
+ * while the parent will connect to a new client or quit.
+ * 
+ * use_jail: if jail is true or false.
+ * deamon: if deamon is true or false.
+ * */
 void handle_fork(int use_jail, int daemon)
 {
     signal(SIGCHLD, SIG_IGN);
@@ -115,6 +148,11 @@ void handle_fork(int use_jail, int daemon)
     kill(0, SIGUSR1);
 }
 
+/**
+ * Make the process a daemon.
+ * 
+ * document_root_path: change to the www-folder/ source folder of the webpages.
+ * */
 void create_a_deamon(char *document_root_path)
 {
     int fd0, fd1, fd2;
@@ -170,6 +208,16 @@ void create_a_deamon(char *document_root_path)
     fd2 = dup(0);
 }
 
+/**
+ * Starts the main serverprocess with the specification given.
+ * 
+ * document_root_path: Path to the webcontent, eg: index.html
+ * port: port the server is to be connected to.
+ * log: if a log is writen to syslog or a file.
+ * deamon: if the process is to be run as a daemon.
+ * setting: which request-method is to use.
+ * use_jail: if jail is to be used or realpath.
+ * */
 void start_server(char *document_root_path, int port, int log, int deamon, int setting, int use_jail)
 {
     check_www_path();
