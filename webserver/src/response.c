@@ -5,6 +5,11 @@
 
 MyFile* error_page;
 
+/**
+ * Reads out the size of a file. Returns the value.
+ * 
+ * request: Holds the path to the file.
+ * */
 int define_content_size(Request_t* request)
 {
         int size;
@@ -17,12 +22,18 @@ int define_content_size(Request_t* request)
         return size;
 }
 
+/**
+ * Deallocates the memory for the error-page.
+ * */
 void free_error_page()
 {
     free(error_page->file_content);
     free(error_page);
 }
 
+/**
+ * Reads the raw content of the error page.
+ * */
 void read_error_page(char* document_root_path)
 {
     char error_html[] = "/error.html";
@@ -35,6 +46,13 @@ void read_error_page(char* document_root_path)
     error_page = define_content(&re, length);
 }
 
+/**
+ * Replaces parts of the content of the raw-error-page with the actual error-code and information given.
+ * 
+ * cpy_page: copy of the error_page
+ * word: word to be replaced with the actual content.
+ * to: actual content to be added.
+ * */
 void fill_word(char* cpy_page, const char* word, char* to)
 {
     char* ptr = strstr(cpy_page, word);
@@ -50,6 +68,11 @@ void fill_word(char* cpy_page, const char* word, char* to)
     }
 }
 
+/**
+ * function to fill the error-page with actual content of the response-code.
+ * 
+ * response_head: header-information about the occured error.
+ * */
 MyFile* fill_error_page(HTTP_HEAD* response_head)
 {
     MyFile* file = malloc(sizeof(MyFile));
@@ -65,6 +88,11 @@ MyFile* fill_error_page(HTTP_HEAD* response_head)
     return file;
 }
 
+/**
+ * Reads the current servertime and formats it to GMT.
+ * 
+ * time_string: String to save the time in.
+ * */
 char* get_server_time(char* time_string)
 {
     time_string = malloc(256);
@@ -74,6 +102,12 @@ char* get_server_time(char* time_string)
     return time_string;
 }
 
+/**
+ * Reads out the information of a content to be send.
+ * 
+ * request: information about the path to the content, which is requested.
+ * allocated_memory: adds + 1 to the memorey depending on the size of the file.
+ * */
 MyFile* define_content(Request_t* request, int allocated_memory)
 {
     MyFile* file = malloc(sizeof(MyFile));
@@ -93,6 +127,13 @@ MyFile* define_content(Request_t* request, int allocated_memory)
     return file;
 }
 
+/**
+ * Creates a log entry or errorlog entry depending on the statuscode.
+ * 
+ * response_head: holds information of the server-response.
+ * request: holds information of the request from the client.
+ * size: size of the content which is to be send.
+ * */
 void add_log(HTTP_HEAD* response_head, Request_t* request, int size)
 {
     if (request->response_code != 408 && request->response_code != 500 && request->response_code != 503)
@@ -141,6 +182,13 @@ void add_log(HTTP_HEAD* response_head, Request_t* request, int size)
     }
 }
 
+/**
+ * Sends out the response to the client.
+ * 
+ * client: holds information about the socket.
+ * response: holds the string to be send.
+ * response_size: holds the lenght of the string to be send.
+ * */
 int send_response(Client *client, char *response, int response_size)
 {
     if (send(client->socket, response, response_size, 0) == -1)
@@ -153,8 +201,18 @@ int send_response(Client *client, char *response, int response_size)
     return 1;
 }
 
+/**
+ * Builds a proper Header which is to be send to the client and/or the content the client requested into a string, 
+ * to be send over the socket-connection.
+ * 
+ * response_head: Information which are to be placed into the Header.
+ * request: Information about the requested content.
+ * head_true: 0 if a Header is requiered, 1 if no header is requiered (HTTP 0.9)
+ * content_true: 0 if content is requested, 1 if no content is requested.
+ * */
 int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, int head_true, int content_true)
 {
+    //Header true, Content true -> GET request or response with the error_page
     if(head_true == 0 && content_true == 0)
     {
         response_head.content_size;
@@ -213,6 +271,7 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
         free(file);
         free(response_head.server_time);
     }
+    //header true, content false -> HEAD request
     else if (head_true == 0 && content_true == 1)
     {
         response_head.content_size = 0;
@@ -253,6 +312,7 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
 
         free(response_head.server_time);
     }
+    //Header false, content true -> HTTP 0.9 request
     else if (head_true == 1 && content_true == 0)
     {
         response_head.content_size = define_content_size(request);
@@ -275,6 +335,12 @@ int build_response(HTTP_HEAD response_head, Request_t* request, Client *client, 
     }
 }
 
+/**
+ * Gathers the information for the Header for a proper response.
+ * 
+ * request: holds the information about the requested content and status-code triggered.
+ * client: holds the information about the client.
+ * */
 int gather_response_information(Request_t* request, Client *client)
 {
     HTTP_HEAD response_head;
