@@ -5,6 +5,12 @@
 #include <errno.h>
 #include <sys/time.h>
 
+/**
+ * Internal function! Sets the path to the rigth folder
+ * 
+ * document_root_path: The server's documents root path, ex: absolute path to the www folder
+ * use_jail: If jail should be used or not
+ * */
 void _set_path_to_www_folder(char* document_root_path, int use_jail)
 {
     // Add the path to www to the path if not jail, else only /
@@ -18,6 +24,9 @@ void _set_path_to_www_folder(char* document_root_path, int use_jail)
     }
 }
 
+/**
+ * Free the allocated memory of the headers
+ * */
 void free_headers(Headers* headers)
 {
     free(headers->accept);
@@ -30,6 +39,9 @@ void free_headers(Headers* headers)
     free(headers->user_agent);
 }
 
+/**
+ * Internal function! Sets all the fields of the header struct to NULL
+ * */
 void _init_headers(Headers* headers)
 {
     headers->accept = NULL;
@@ -42,6 +54,15 @@ void _init_headers(Headers* headers)
     headers->user_agent = NULL;
 }
 
+/**
+ * Internal function! Set the header as the second field of the current_line.
+ * 
+ * header: The current header of the request
+ * current_line: The current line in the request
+ * comp_str: The field that is to be removed from the current_line
+ * 
+ * Returns: If it succeeded or not
+ * */
 int _set_header(char** header, char* current_line, const char* comp_str)
 {
     if (strlen(current_line) >= strlen(comp_str))
@@ -57,6 +78,14 @@ int _set_header(char** header, char* current_line, const char* comp_str)
     return 0;
 }
 
+/**
+ * Internal function! Set the rigth field in the header struct depending on the current_line.
+ * 
+ * headers: A instance of the header struct
+ * current_line: The current line in the request
+ * 
+ * Returns: The request type, GET, HEAD or NONE. This is only used if the current_line have the request method.
+ * */
 Request_type _populate_headers(Headers* headers, char* current_line)
 {
     int get = _set_header(&headers->method, current_line, "GET");
@@ -72,6 +101,15 @@ Request_type _populate_headers(Headers* headers, char* current_line)
     return (get? RT_GET: (head? RT_HEAD: RT_NONE));
 }
 
+/**
+ * Internal function! Check if the method of the request is not implemented or if it is some thing else.
+ * 
+ * request: A instance of the request struct
+ * rt: The method of the request, if not RT_NONE then it skips the check
+ * first_word: The first field of the request line
+ * 
+ * Returns: 1 if the request is RT_NONE else 0
+ * */
 int _check_method(Request_t* request, Request_type rt, char* first_word)
 {
     // Check if method is GET or HEAD. If not check if it should answer with 501 or 400.
@@ -96,6 +134,14 @@ int _check_method(Request_t* request, Request_type rt, char* first_word)
     return 0;
 }
 
+/**
+ * Internal function! Check what HTTP version the reqeust from the client is.
+ * 
+ * request: Instance of the request struct
+ * method: The rest of the reqeust line. Expect a char* with the second filed as the http version
+ * 
+ * Returns: 1 if an error occurs else 0
+ * */
 int _check_http_version(Request_t* request, char* method)
 {
     // Check what the HTTP version for the request is.
@@ -136,22 +182,32 @@ int _check_http_version(Request_t* request, char* method)
     return 1;
 }
 
+/**
+ * Internal function! Check if the URI is valid or not.
+ * 
+ * request: Instance of the request struct
+ * method: The URI
+ * use_jail: If jail is used or not
+ * 
+ * Returns: 1 if an error occurs else 0
+ * */
 int _check_uri(Request_t* request, char* method, int use_jail)
 {
     // Only used if not in jail
-    char* last_folder_in_document_path = NULL;
+    char* relative_path_to_www = NULL;
 
     char uri[PATH_MAX];
     if (!use_jail)
     {
         char* ptr = strrchr(path_www_folder, '/');
-        last_folder_in_document_path = malloc(strlen("..") + strlen(ptr) + 1);
-        strcpy(last_folder_in_document_path, "..");
-        strcat(last_folder_in_document_path, ptr);
+        relative_path_to_www = malloc(strlen("..") + strlen(ptr) + 1);
+        strcpy(relative_path_to_www, "..");
+        strcat(relative_path_to_www, ptr);
 
-        strcat(uri, last_folder_in_document_path);
+        strcat(uri, relative_path_to_www);
     }
     size_t n = strlen(method);
+    // If a space if at the end of the URI, recalculate the length of the URI string
     char* p = strchr(method, ' ');
     if (p != NULL)
     {
@@ -168,19 +224,21 @@ int _check_uri(Request_t* request, char* method, int use_jail)
     }
     
     strncat(uri, method, n);
+    // If simple request, make sure that the uri has not a space at the end of it
     if (request->http_version == HTTP_0_9)
         uri[strlen(uri) - 1] = '\0';
 
-    if (use_jail? uri[0] == '\0' : strcmp(uri, last_folder_in_document_path) == 0)
+    // Check if the uri is missing
+    if (use_jail? uri[0] == '\0' : strcmp(uri, relative_path_to_www) == 0)
     {
         printf("400 Bad Request, missing URI\n");
         request->response_code = 400;
         return 1;
     }
 
-    if (last_folder_in_document_path)
+    if (relative_path_to_www)
     {
-        free(last_folder_in_document_path);
+        free(relative_path_to_www);
     }
 
     // Remove everything after the "?" symbol in the path
@@ -211,6 +269,7 @@ int _check_uri(Request_t* request, char* method, int use_jail)
             }
             else
             {
+                // If the uri want the error.html file respond with a status code of 403
                 char temp[PATH_MAX];
                 strcpy(temp, path_www_folder);
                 strcat(temp, "/error.html");
@@ -221,6 +280,7 @@ int _check_uri(Request_t* request, char* method, int use_jail)
                     return 1;
                 }
 
+                // If only a / is used as a URI add the index.html file as a default request
                 if (strcmp(path_www_folder, real_uri) == 0)
                 {
                     strcat(real_uri, "/index.html");
@@ -230,6 +290,7 @@ int _check_uri(Request_t* request, char* method, int use_jail)
                 {
                     strcpy(request->path, real_uri);
                 }
+                // If jail remove the / at the start of the URI
                 if (use_jail)
                 {
                     int i;
@@ -255,6 +316,12 @@ int _check_uri(Request_t* request, char* method, int use_jail)
     }
 }
 
+/**
+ * Internal function! Add The first field that was removed from the request when checking the request method.
+ * 
+ * first_word: The method that should be added to the request line
+ * request_ret: Instance of the request struct
+ * */
 void _add_get_head_on_method(char* first_word, Request_t* request_ret)
 {
     // Do so the method variable holds ex: GET / HTTP/1.0
@@ -269,7 +336,14 @@ void _add_get_head_on_method(char* first_word, Request_t* request_ret)
     free(temp);
 }
 
-int string_length_check(char* request)
+/**
+ * Internal function! Check if the request is too long.
+ * 
+ * request: The requets that is to be checked
+ * 
+ * Return 1 if it is too long else 0
+ * */
+int _string_length_check(char* request)
 {
     int i;
     for (i = 0; i < PATH_MAX; i++)
@@ -282,6 +356,14 @@ int string_length_check(char* request)
     return 1;
 }
 
+/**
+ * Internal function! Process the request.
+ * 
+ * request: The request that the client sent to the server
+ * use_jail: If jail is used or not
+ * 
+ * Returns: A filled request struct
+ * */
 Request_t _process_request(char* request, int use_jail)
 {
     Request_t request_ret;
@@ -290,13 +372,14 @@ Request_t _process_request(char* request, int use_jail)
     request_ret.response_code = 200;
     _init_headers(&request_ret.headers);
 
-    if (string_length_check(request))
+    if (_string_length_check(request))
     {
         printf("400 Bad Request\n");
         request_ret.response_code = 400;
         return request_ret;
     }
 
+    // If the request is smaller that 3, the length of the smallest method (GET), the request is a bad request
     if (strlen(request) < 3)
     {
         printf("400 Bad Request\n");
@@ -304,6 +387,7 @@ Request_t _process_request(char* request, int use_jail)
         return request_ret;
     }
 
+    // Divied the request into lines, and check line by line.
     Request_type get_head_none;
     char* current_line = request;
     while (current_line)
@@ -361,12 +445,26 @@ Request_t _process_request(char* request, int use_jail)
     return request_ret;
 }
 
+/**
+ * Initialize the request.
+ * 
+ * document_root_path: The server's documents root path, ex: absolute path to the www folder
+ * use_jail: If jail should be used or not
+ * */
 void request_init(char* document_root_path, int use_jail)
 {
     request_stop_reciving_data = 0;
     _set_path_to_www_folder(document_root_path, use_jail);
 }
 
+/**
+ * Recive a request from the cilent and process it to be used in the server.
+ * 
+ * client: The client that the request is expected to come from
+ * use_jail: If jail should be used or not
+ * 
+ * Returns: A filled request struct
+ * */
 Request_t request_received(Client* client, int use_jail)
 {
     struct timeval start, now;

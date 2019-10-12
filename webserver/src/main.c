@@ -1,8 +1,3 @@
-// Need to be defined for chroot to work
-//#define _POSIX_C_SOURCE 199309L
-//#define _XOPEN_SOURCE 500
-//#define _BSD_SOURCE 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +5,13 @@
 #include "../include/read_config.h"
 #include "../include/server.h"
 
+/**
+ * Get a integer from a field in the configuration file.
+ * 
+ * config_line: Line in the fonfiguration that is used as a field.
+ * 
+ * Returns: The integer if succeeded else exit with an error.
+ * */
 int read_int_from_file(char *config_line)
 {
 	ServerConfig sc;
@@ -32,6 +34,9 @@ int read_int_from_file(char *config_line)
 	}
 }
 
+/**
+ * Print the usage to the console.
+ * */
 void print_usage()
 {
 	printf("Usage: server [-dlrj] [-p port_number] [-s thread | -s fork]\n\n");	
@@ -44,12 +49,18 @@ void print_usage()
 	printf("%s %-20s %-20s","", "-j,", "run server with chroot, jail.\n");
 }
 
+/**
+ * Exit the server safely.
+ * */
 void server_exit(int exit_code)
 {
 	free_configurations();
 	exit(exit_code);
 }
 
+/**
+ * The main function
+ * */
 int main(int argc, char const *argv[])
 {
 	// Open lab2-config before using chroot
@@ -71,11 +82,13 @@ int main(int argc, char const *argv[])
 		int number_arguments = 0;
 		while (argv[number_arguments] != NULL)
 		{
+			// Check if -h is used and print the help/usage if it is used
 			if (strcmp(argv[number_arguments], "-h") == 0)
 			{
 				print_usage();
 				server_exit(0);
 			}
+			// Check if the -p argument is used and get its argument
 			else if (strcmp(argv[number_arguments], "-p") == 0)
 			{
 				if (argv[number_arguments + 1] != NULL)
@@ -102,6 +115,7 @@ int main(int argc, char const *argv[])
 					server_exit(3);
 				}
 			}
+			// Check if the -s argument is used and get its argument
 			else if (strcmp(argv[number_arguments], "-s") == 0)
 			{
 				if (argv[number_arguments + 1] != NULL)
@@ -132,6 +146,7 @@ int main(int argc, char const *argv[])
 					server_exit(3);
 				}
 			}
+			// Check if arguments without the extra arguments is used
 			else if (argv[number_arguments][0] == '-')
 			{
 				int i;
@@ -139,15 +154,15 @@ int main(int argc, char const *argv[])
 				{
 					switch (argv[number_arguments][i])
 					{
-					case 'd':
+					case 'd': // Run as a daemon
 						deamon = 1;
 						deamon_true = 0;
 						break;
-					case 'l':
+					case 'l': // Log to file
 						log = 1;
 						log_true = 0;
 						break;
-					case 'r':
+					case 'r': // Repair the configuration file, set it to the default values
 						if (repair_config_file())
 						{
 							printf("Repaired configuration file.\n");
@@ -159,7 +174,7 @@ int main(int argc, char const *argv[])
 							server_exit(-1);
 						}
 						break;
-					case 'j':
+					case 'j': // Jail the server to the server's documents root path
 						#if MY_DEBUG
 						use_jail = 0;
 						fprintf(stderr, "ERROR: jail is not to be used if compiled with DEBUG.\n");
@@ -170,7 +185,7 @@ int main(int argc, char const *argv[])
 						
 						jail_true = 0;
 						break;
-					default:
+					default: // Wrong input.
 						printf("Input [%s] not supported.\n", &argv[number_arguments][i]);
 						print_usage();
 						server_exit(3);
@@ -181,6 +196,7 @@ int main(int argc, char const *argv[])
 			number_arguments++;
 		}
 
+		// Get the rigth information from the configuration file
 		if (given_port_true == 1)
 		{
 			given_port = read_int_from_file("SERVER_PORT=");
@@ -206,7 +222,7 @@ int main(int argc, char const *argv[])
 	}
 	else
 	{
-		//default start
+		// Default start
 		given_port = read_int_from_file("SERVER_PORT=");
 		deamon = read_int_from_file("SERVER_AS_DEAMON=");
 		log = read_int_from_file("SERVER_LOG=");

@@ -26,9 +26,9 @@ void array_delete_array(Array* array)
 }
 
 /**
- * Internal function! Check if an array's capacity should be expanded. If it is double the capacity of the array.
+ * Internal function! Check if an array's capacity should be expanded. If it is, then double the capacity of the array.
  * 
- * array: Array instance that should be initilized.
+ * array: Array instance that should expand.
  * */
 void _array_check_expand(Array* array)
 {
@@ -48,9 +48,7 @@ void _array_check_expand(Array* array)
 void array_push_element(Array* array, void* value)
 {
     _array_check_expand(array);
-
-    /*array->arr[array->size].element = malloc(array->item_size);
-    memcpy(array->arr[array->size].element, value, array->item_size);*/
+    
     array->arr[array->size].element = value;
     array->size++;
 }

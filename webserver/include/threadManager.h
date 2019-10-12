@@ -8,13 +8,15 @@
 #include "../include/array.h"
 
 Array _thread_manager_array;
+pthread_mutex_t _thread_manager_thread_mutex;
 
+static int _thread_manager_NEW_ID = 0;
+
+// Internal struct! Holds a threads ID and the struct to the thread indentifiers
 typedef struct _thread_manager_thread_info{
 	int id;
 	pthread_t thread;
 } _thread_manager_Thread_info;
-
-static int _thread_manager_NEW_ID = 0;
 
 /**
  * Initilize the thread manager.
@@ -38,8 +40,9 @@ int thread_manager_new_thread(void*(*func)(void*), void* args);
  * */
 void thread_manager_terminate_threads();
 
-pthread_mutex_t _thread_manager_thread_mutex;
-
+/**
+ * Telling the thread manager the thread that called the function is done, so deallocate the internal memory that was allocated for it.
+ * */
 void thread_manager_exit_thread(void* args);
 
 #endif
