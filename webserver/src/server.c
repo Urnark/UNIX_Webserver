@@ -229,6 +229,11 @@ void start_server(char *document_root_path, int port, int log, int deamon, int s
     {
         create_a_deamon(document_root_path);
     }
+    else
+    {
+        printf("Press ENTER to stop the server.\n");
+    }
+    
 
     // Open log files before using chroot
     logging_open(log);
