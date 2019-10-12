@@ -21,7 +21,7 @@ int read_int_from_file(char *config_line)
 	long int result = strtol(configuration, &end, 10);
 	if (end == configuration)
 	{
-		printf("Could not read %s from \"lab2-config\" file.\n", configuration);
+		printf("Could not read %s from the configuration-file.\n", configuration);
 		free(configuration);
 		exit(-1);
 	}
