@@ -138,10 +138,18 @@ int _check_http_version(Request_t* request, char* method)
 
 int _check_uri(Request_t* request, char* method, int use_jail)
 {
+    // Only used if not in jail
+    char* last_folder_in_document_path = NULL;
+
     char uri[PATH_MAX];
     if (!use_jail)
     {
-        strcat(uri, "../www");
+        char* ptr = strrchr(path_www_folder, '/');
+        last_folder_in_document_path = malloc(strlen("..") + strlen(ptr) + 1);
+        strcpy(last_folder_in_document_path, "..");
+        strcat(last_folder_in_document_path, ptr);
+
+        strcat(uri, last_folder_in_document_path);
     }
     size_t n = strlen(method);
     char* p = strchr(method, ' ');
@@ -163,11 +171,16 @@ int _check_uri(Request_t* request, char* method, int use_jail)
     if (request->http_version == HTTP_0_9)
         uri[strlen(uri) - 1] = '\0';
 
-    if (use_jail? uri[0] == '\0' : strcmp(uri, "../www") == 0)
+    if (use_jail? uri[0] == '\0' : strcmp(uri, last_folder_in_document_path) == 0)
     {
         printf("400 Bad Request, missing URI\n");
         request->response_code = 400;
         return 1;
+    }
+
+    if (last_folder_in_document_path)
+    {
+        free(last_folder_in_document_path);
     }
 
     // Remove everything after the "?" symbol in the path
