@@ -248,7 +248,7 @@ int _check_uri(Request_t* request, char* method, int use_jail)
         *ptr = '\0';
     }
 
-    printf("%s\n", uri);
+    //printf("%s\n", uri);
 
     // Check uri
     char path[PATH_MAX];
@@ -436,11 +436,11 @@ Request_t _process_request(char* request, int use_jail)
         return request_ret;
     }
 
-    printf("Method: %s | %s | %s\nHost: %s\nUser-Agent: %s\nAccept: %s\nAccept-Language: %s\nAccept-Encoding: %s\nConnection: %s\nReferer: %s\n", 
+    /*printf("Method: %s | %s | %s\nHost: %s\nUser-Agent: %s\nAccept: %s\nAccept-Language: %s\nAccept-Encoding: %s\nConnection: %s\nReferer: %s\n", 
         (get_head_none == RT_GET? "GET": "HEAD"), request_ret.path, 
         (request_ret.http_version == HTTP_0_9? "HTTP/0.9": (request_ret.http_version == HTTP_1_0? "HTTP/1.0":(request_ret.http_version == HTTP_none? "none":"HTTP/1.1"))), 
         request_ret.headers.host, request_ret.headers.user_agent, request_ret.headers.accept, request_ret.headers.accept_language, 
-        request_ret.headers.accept_encoding, request_ret.headers.connection, request_ret.headers.referer);
+        request_ret.headers.accept_encoding, request_ret.headers.connection, request_ret.headers.referer);*/
     
     return request_ret;
 }
