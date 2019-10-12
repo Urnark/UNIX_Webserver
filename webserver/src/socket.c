@@ -11,7 +11,7 @@
 void error(char * message)
 {
     perror(message);
-    free_configuration();
+    free_configurations();
     exit(1);
 }
 
