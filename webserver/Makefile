@@ -30,27 +30,13 @@ OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 PROG = server
 RM = /bin/rm
 
-#all: greetings
-
 all: $(PROG)
-
-# greetings: main.o greeter.o
-# 	gcc -o greetings main.o greeter.o
 
 $(PROG): $(OBJS)
 	$(LD) $^ -o $(PROG) -lpthread $(de) -lm
 
-#main.o: main.c
-#	gcc -g -c main.c
-
-#greeter.o: greeter.c
-#	gcc -g -c greeter.c
-
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@ -lpthread $(de) -lm
-
-#clean:
-#	rm main.o greeter.o
 
 clean:
 	$(RM) $(PROG) $(OBJS)
