@@ -139,7 +139,7 @@ int create_config_file(){
 
         fprintf(f, "SERVER_DOCUMENT_ROOT=%s\n", document_root);
         fprintf(f, "SERVER_NAME=Card_Server\n");
-        fprintf(f, "SERVER_VERSION=0.2\n");
+        fprintf(f, "SERVER_VERSION=2.12\n");
         fprintf(f, "SERVER_PORT=4444\n");
         fprintf(f, "SERVER_AS_DEAMON=0\n");
         fprintf(f, "SERVER_LOG=0\n");
