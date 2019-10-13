@@ -49,7 +49,7 @@ SERVER_NAME=[Name of the Server]
 SERVER_VERSION=[2.12]
 SERVER_PORT=[Portnumber]
 SERVER_AS_DEAMON=[0 for no daemon/ 1 for run as a deamon]
-SERVER_LOG=[0 for create syslog/ 1 for write to a logfile]
+SERVER_LOG=[0 for write syslog/ 1 for create/write to a logfile]
 SERVER_SETTING=[0 for execute with threads/ 1 for execute with fork()]
 SERVER_JAIL=[0 for realpath/ 1 for run in a jail]
 }
