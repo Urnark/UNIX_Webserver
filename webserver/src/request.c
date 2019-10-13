@@ -207,7 +207,7 @@ int _check_uri(Request_t* request, char* method, int use_jail)
         strcat(uri, relative_path_to_www);
     }
     size_t n = strlen(method);
-    // If a space if at the end of the URI, recalculate the length of the URI string
+    // If a space is at the end of the URI, recalculate the length of the URI string
     char* p = strchr(method, ' ');
     if (p != NULL)
     {
@@ -222,10 +222,10 @@ int _check_uri(Request_t* request, char* method, int use_jail)
         request->response_code = 400;
         return 1;
     }
-    
+
     strncat(uri, method, n);
     // If simple request, make sure that the uri has not a space at the end of it
-    if (request->http_version == HTTP_0_9)
+    if (request->http_version == HTTP_0_9 && p == NULL)
         uri[strlen(uri) - 1] = '\0';
 
     // Check if the uri is missing
