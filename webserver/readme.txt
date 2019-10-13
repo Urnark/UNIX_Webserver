@@ -25,7 +25,7 @@ Implementations
 Installation notes
 -------------------------------------------------------------------------------------------------
 - use the make command in the webserver folder to create
-server.sh with whom you can execute your webserver.
+server with whom you can execute your webserver.
 
 
 Options for running the server
